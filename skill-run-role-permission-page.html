@@ -1,0 +1,2961 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SSC UI 组件总览</title>
+    <style>
+      :root {
+        --color-page: #fbfaf8;
+        --color-surface: #ffffff;
+        --color-surface-soft: #f3faf8;
+        --color-surface-softer: #f8fcfa;
+        --color-primary: #0c9b72;
+        --color-primary-deep: #0a7e5d;
+        --color-primary-soft: #e8f8f3;
+        --color-text-title: #222222;
+        --color-text-main: #2f2f2f;
+        --color-text-secondary: #6f6a62;
+        --color-text-muted: #9f9a93;
+        --color-text-placeholder: #c6c0b8;
+        --color-border: #e5eae7;
+        --color-border-strong: #cee0d6;
+        --color-warning: #e07f33;
+        --color-warning-soft: #fef0e5;
+        --color-danger: #e53e3e;
+        --color-danger-soft: #fff4f4;
+        --color-disabled-soft: #f4f4f4;
+        --shadow-panel: 0 18px 42px rgba(28, 45, 37, 0.06);
+        --shadow-float: 0 20px 40px rgba(24, 43, 35, 0.12);
+        --radius-sm: 6px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-xl: 32px;
+        --control-height: 40px;
+        --font-base: "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        --sidebar-width: 288px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at left top, rgba(12, 155, 114, 0.1), transparent 18%),
+          radial-gradient(circle at right bottom, rgba(12, 155, 114, 0.08), transparent 20%),
+          var(--color-page);
+        color: var(--color-text-main);
+        font-family: var(--font-base);
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        background: none;
+        cursor: pointer;
+      }
+
+      input,
+      textarea {
+        outline: none;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .catalog-shell {
+        display: grid;
+        grid-template-columns: var(--sidebar-width) 1fr;
+        min-height: 100vh;
+      }
+
+      .catalog-sidebar {
+        position: sticky;
+        top: 0;
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        height: 100vh;
+        overflow: hidden;
+        padding: 24px 22px 28px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.86) 72%, rgba(232, 248, 243, 0.88));
+        border-right: 1px solid rgba(229, 234, 231, 0.72);
+        backdrop-filter: blur(14px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 50px;
+        height: 50px;
+        border-radius: 18px;
+        color: #fff;
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(150deg, #13a177, #0c9b72);
+        box-shadow: 0 12px 24px rgba(12, 155, 114, 0.24);
+      }
+
+      .brand-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .brand-subtitle {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .sidebar-title {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: var(--color-text-muted);
+      }
+
+      .search-field {
+        position: relative;
+      }
+
+      .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--color-text-placeholder);
+        border-radius: 50%;
+        transform: translateY(-50%);
+      }
+
+      .search-icon::after {
+        content: "";
+        position: absolute;
+        right: -5px;
+        bottom: -4px;
+        width: 6px;
+        height: 2px;
+        border-radius: 999px;
+        background: var(--color-text-placeholder);
+        transform: rotate(45deg);
+      }
+
+      .search-field input {
+        width: 100%;
+        height: var(--control-height);
+        padding: 0 14px 0 40px;
+        border: 1px solid var(--color-border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.98);
+        color: var(--color-text-main);
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+      }
+
+      .search-field input:focus {
+        border-color: rgba(12, 155, 114, 0.6);
+        box-shadow: 0 0 0 4px rgba(12, 155, 114, 0.08);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .component-directory {
+        display: grid;
+        gap: 12px;
+        min-height: 0;
+        flex: 1;
+      }
+
+      .sidebar-heading-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .sidebar-counter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        height: 24px;
+        padding: 0 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .sidebar-current {
+        display: grid;
+        gap: 4px;
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(232, 248, 243, 0.82);
+      }
+
+      .sidebar-current-label {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+      }
+
+      .sidebar-current strong {
+        font-size: 16px;
+        color: var(--color-primary-deep);
+      }
+
+      .component-nav {
+        display: grid;
+        gap: 6px;
+        min-height: 0;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .component-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .component-link-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .component-link-meta {
+        flex: none;
+        font-size: 11px;
+        color: var(--color-text-muted);
+      }
+
+      .component-nav::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .component-nav::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: rgba(206, 224, 214, 0.9);
+      }
+
+      .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 34px;
+        padding: 0 14px;
+        border: 1px solid var(--color-border);
+        border-radius: 999px;
+        color: var(--color-text-secondary);
+        background: rgba(255, 255, 255, 0.96);
+        transition: all 180ms ease;
+      }
+
+      .filter-chip.active,
+      .filter-chip:hover {
+        color: var(--color-primary);
+        border-color: rgba(12, 155, 114, 0.26);
+        background: var(--color-primary-soft);
+      }
+
+      .filter-chip strong {
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .section-nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .section-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        color: var(--color-text-secondary);
+        transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+      }
+
+      .section-link.active,
+      .section-link:hover {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+        transform: translateX(2px);
+      }
+
+      .section-link-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .section-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.46;
+      }
+
+      .section-count {
+        min-width: 28px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        text-align: center;
+        color: var(--color-text-muted);
+        background: rgba(245, 246, 245, 0.96);
+      }
+
+      .sidebar-note {
+        margin-top: auto;
+        padding: 18px;
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(232, 248, 243, 0.36), rgba(232, 248, 243, 0.88));
+      }
+
+      .sidebar-note strong {
+        display: block;
+        font-size: 14px;
+        color: var(--color-text-title);
+      }
+
+      .sidebar-note p {
+        margin: 8px 0 0;
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--color-text-secondary);
+      }
+
+      .catalog-main {
+        min-width: 0;
+        padding: 28px 24px 36px;
+      }
+
+      .hero {
+        padding: 28px 30px;
+        border: 1px solid rgba(229, 234, 231, 0.88);
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.84)),
+          linear-gradient(160deg, rgba(232, 248, 243, 0.22), rgba(255, 255, 255, 0));
+        box-shadow: var(--shadow-panel);
+      }
+
+      .hero-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .hero-title {
+        margin: 0;
+        font-size: 38px;
+        line-height: 1.1;
+        color: var(--color-text-title);
+      }
+
+      .hero-subtitle {
+        margin: 12px 0 0;
+        max-width: 760px;
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--color-text-secondary);
+      }
+
+      .hero-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 30px;
+        padding: 0 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .stat-tile {
+        padding: 18px 18px 16px;
+        border: 1px solid rgba(229, 234, 231, 0.84);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.84);
+      }
+
+      .stat-tile-label {
+        font-size: 13px;
+        color: var(--color-text-muted);
+      }
+
+      .stat-tile-value {
+        margin-top: 10px;
+        font-size: 30px;
+        line-height: 1;
+        color: var(--color-text-title);
+      }
+
+      .stat-tile-note {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--color-text-secondary);
+      }
+
+      .catalog-sections {
+        display: grid;
+        gap: 18px;
+        margin-top: 22px;
+      }
+
+      .catalog-workbench {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 22px;
+        align-items: start;
+      }
+
+      .catalog-content {
+        min-width: 0;
+      }
+
+      .catalog-rail {
+        position: sticky;
+        top: 24px;
+      }
+
+      .rail-panel {
+        display: grid;
+        gap: 16px;
+        padding: 18px;
+        border: 1px solid rgba(229, 234, 231, 0.88);
+        border-radius: 26px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 250, 0.94));
+        box-shadow: var(--shadow-panel);
+      }
+
+      .rail-kicker {
+        margin: 0;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .rail-title {
+        display: block;
+        font-size: 18px;
+        color: var(--color-text-title);
+      }
+
+      .rail-desc {
+        margin: -6px 0 0;
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--color-text-secondary);
+      }
+
+      .rail-current {
+        display: grid;
+        gap: 4px;
+        padding: 14px;
+        border-radius: 18px;
+        background: var(--color-primary-soft);
+      }
+
+      .rail-current-label {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+      }
+
+      .rail-current strong {
+        font-size: 16px;
+        color: var(--color-primary-deep);
+      }
+
+      .section-nav-rail {
+        gap: 10px;
+      }
+
+      .component-section {
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .section-head {
+        display: none;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 24px;
+        color: var(--color-text-title);
+      }
+
+      .section-desc {
+        margin: 8px 0 0;
+        font-size: 14px;
+        line-height: 1.75;
+        color: var(--color-text-secondary);
+      }
+
+      .section-meta {
+        display: inline-flex;
+        align-items: center;
+        height: 30px;
+        padding: 0 12px;
+        border-radius: 999px;
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+        white-space: nowrap;
+      }
+
+      .component-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .component-card {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 18px;
+        border: 1px solid rgba(229, 234, 231, 0.86);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 250, 0.98));
+        scroll-margin-top: 24px;
+        transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      }
+
+      .component-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(12, 155, 114, 0.2);
+        box-shadow: 0 18px 30px rgba(24, 43, 35, 0.06);
+      }
+
+      .component-card.nav-active {
+        border-color: rgba(12, 155, 114, 0.28);
+        box-shadow: 0 20px 34px rgba(12, 155, 114, 0.08);
+      }
+
+      .component-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .component-name {
+        margin: 0;
+        font-size: 18px;
+        color: var(--color-text-title);
+      }
+
+      .component-desc {
+        margin: 8px 0 0;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--color-text-secondary);
+      }
+
+      .component-kind {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        background: rgba(244, 244, 244, 0.9);
+      }
+
+      .preview-panel {
+        padding: 16px;
+        border: 1px solid rgba(229, 234, 231, 0.9);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.94);
+      }
+
+      .preview-stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .preview-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .preview-label {
+        min-width: 66px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .variant-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .variant-tag {
+        display: inline-flex;
+        align-items: center;
+        height: 26px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        background: rgba(248, 249, 248, 0.96);
+        border: 1px solid rgba(229, 234, 231, 0.86);
+      }
+
+      .token-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .token-chip {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--color-primary-deep);
+        background: rgba(232, 248, 243, 0.88);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 92px;
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+      }
+
+      .btn .mini-icon {
+        opacity: 0.42;
+      }
+
+      .btn.primary .mini-icon {
+        opacity: 0.82;
+      }
+
+      .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.52;
+      }
+
+      .btn.primary {
+        color: #fff;
+        background: var(--color-primary);
+        box-shadow: 0 12px 24px rgba(12, 155, 114, 0.18);
+      }
+
+      .btn.primary.hover {
+        background: var(--color-primary-deep);
+      }
+
+      .btn.secondary {
+        color: var(--color-text-secondary);
+        border-color: var(--color-border);
+        background: #fff;
+      }
+
+      .btn.secondary.hover {
+        color: var(--color-primary);
+        border-color: rgba(12, 155, 114, 0.28);
+        background: var(--color-primary-soft);
+      }
+
+      .btn.danger {
+        color: var(--color-danger);
+        background: var(--color-danger-soft);
+      }
+
+      .btn.ghost {
+        color: var(--color-primary);
+        background: rgba(255, 255, 255, 0);
+      }
+
+      .mini-icon,
+      .menu-glyph,
+      .close-glyph,
+      .caret {
+        display: inline-block;
+        flex: none;
+      }
+
+      .mini-icon {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        background: currentColor;
+        opacity: 0.28;
+      }
+
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--color-border);
+        border-radius: 14px;
+        color: var(--color-text-secondary);
+        background: #fff;
+      }
+
+      .menu-glyph {
+        width: 16px;
+        height: 12px;
+        background:
+          linear-gradient(currentColor, currentColor) 0 0 / 16px 2px no-repeat,
+          linear-gradient(currentColor, currentColor) 0 5px / 16px 2px no-repeat,
+          linear-gradient(currentColor, currentColor) 0 10px / 16px 2px no-repeat;
+        opacity: 0.56;
+      }
+
+      .close-glyph {
+        position: relative;
+        width: 14px;
+        height: 14px;
+      }
+
+      .close-glyph::before,
+      .close-glyph::after {
+        content: "";
+        position: absolute;
+        inset: 6px 0;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+
+      .close-glyph::before {
+        transform: rotate(45deg);
+      }
+
+      .close-glyph::after {
+        transform: rotate(-45deg);
+      }
+
+      .input-shell,
+      .select-shell,
+      .readonly-shell,
+      .textarea-shell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 40px;
+        padding: 0 14px;
+        border: 1px solid var(--color-border);
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      .input-shell {
+        min-width: 210px;
+      }
+
+      .input-shell.placeholder,
+      .textarea-shell.placeholder {
+        color: var(--color-text-placeholder);
+      }
+
+      .input-shell.error,
+      .textarea-shell.error {
+        border-color: rgba(229, 62, 62, 0.4);
+        background: rgba(255, 244, 244, 0.7);
+      }
+
+      .input-shell.disabled,
+      .select-shell.disabled,
+      .textarea-shell.disabled,
+      .readonly-shell.disabled {
+        color: var(--color-text-muted);
+        background: var(--color-disabled-soft);
+      }
+
+      .textarea-shell {
+        align-items: flex-start;
+        min-height: 88px;
+        padding: 12px 14px;
+      }
+
+      .readonly-shell {
+        min-width: 210px;
+        color: var(--color-text-secondary);
+        background: var(--color-surface-softer);
+      }
+
+      .caret {
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg);
+        opacity: 0.5;
+      }
+
+      .helper-text {
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .error-text {
+        font-size: 12px;
+        color: var(--color-danger);
+      }
+
+      .field-block {
+        display: grid;
+        gap: 6px;
+      }
+
+      .field-label {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+      }
+
+      .field-label strong {
+        color: var(--color-danger);
+      }
+
+      .control-cluster {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px 16px;
+      }
+
+      .check,
+      .radio,
+      .switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--color-text-secondary);
+      }
+
+      .check-box,
+      .radio-box {
+        position: relative;
+        width: 18px;
+        height: 18px;
+        border: 1px solid var(--color-border-strong);
+        background: #fff;
+      }
+
+      .check-box {
+        border-radius: 5px;
+      }
+
+      .check.selected .check-box {
+        border-color: transparent;
+        background: var(--color-primary);
+      }
+
+      .check.selected .check-box::after {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 1px;
+        width: 5px;
+        height: 10px;
+        border-right: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+        transform: rotate(45deg);
+      }
+
+      .radio-box {
+        border-radius: 50%;
+      }
+
+      .radio.selected .radio-box::after {
+        content: "";
+        position: absolute;
+        inset: 4px;
+        border-radius: 50%;
+        background: var(--color-primary);
+      }
+
+      .check.disabled,
+      .radio.disabled,
+      .switch.disabled {
+        opacity: 0.48;
+      }
+
+      .switch-track {
+        position: relative;
+        width: 38px;
+        height: 22px;
+        border-radius: 999px;
+        background: #d8ddd9;
+      }
+
+      .switch.on .switch-track {
+        background: var(--color-primary);
+      }
+
+      .switch-thumb {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(31, 40, 36, 0.18);
+        transition: transform 180ms ease;
+      }
+
+      .switch.on .switch-thumb {
+        transform: translateX(16px);
+      }
+
+      .status-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+        padding: 0 14px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+
+      .status-tag.success {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .status-tag.warning {
+        color: var(--color-warning);
+        background: var(--color-warning-soft);
+      }
+
+      .status-tag.default {
+        color: var(--color-text-secondary);
+        background: rgba(243, 244, 243, 0.92);
+      }
+
+      .status-tag.disabled {
+        color: var(--color-text-muted);
+        background: var(--color-disabled-soft);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: #fff;
+        background: var(--color-primary);
+      }
+
+      .badge.soft {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .badge.warning {
+        color: var(--color-warning);
+        background: var(--color-warning-soft);
+      }
+
+      .tree-demo {
+        display: grid;
+        gap: 8px;
+      }
+
+      .tree-node {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: 12px;
+        color: var(--color-text-secondary);
+      }
+
+      .tree-node.active {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .tree-indent {
+        margin-left: 22px;
+      }
+
+      .tree-arrow {
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(-45deg);
+        opacity: 0.42;
+      }
+
+      .tree-arrow.expanded {
+        transform: rotate(45deg);
+      }
+
+      .stat-card,
+      .info-card,
+      .selection-summary,
+      .empty-card {
+        padding: 16px;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.98);
+      }
+
+      .stat-card {
+        min-width: 168px;
+        background: linear-gradient(180deg, rgba(243, 250, 248, 0.96), rgba(255, 255, 255, 0.96));
+      }
+
+      .stat-card-value {
+        margin-top: 12px;
+        font-size: 28px;
+        color: var(--color-text-title);
+      }
+
+      .info-card strong,
+      .selection-summary strong {
+        display: block;
+        color: var(--color-text-title);
+      }
+
+      .muted {
+        color: var(--color-text-muted);
+      }
+
+      .table-demo {
+        overflow: hidden;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 18px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(229, 234, 231, 0.82);
+        text-align: left;
+      }
+
+      th {
+        color: var(--color-text-muted);
+        background: rgba(243, 250, 248, 0.92);
+        font-weight: 500;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .table-actions {
+        display: inline-flex;
+        gap: 12px;
+        color: var(--color-primary);
+      }
+
+      .pager {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      .page-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 34px;
+        height: 34px;
+        padding: 0 10px;
+        border-radius: 12px;
+        color: var(--color-text-secondary);
+      }
+
+      .page-pill.active {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px 16px;
+        border-radius: 16px;
+      }
+
+      .alert::before {
+        content: "";
+        width: 18px;
+        height: 18px;
+        margin-top: 1px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.18;
+      }
+
+      .alert.warning {
+        color: var(--color-warning);
+        background: var(--color-warning-soft);
+      }
+
+      .alert.error {
+        color: var(--color-danger);
+        background: var(--color-danger-soft);
+      }
+
+      .alert.success {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .dialog-preview {
+        max-width: 360px;
+        padding: 18px;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 22px;
+        background: #fff;
+        box-shadow: 0 16px 36px rgba(24, 43, 35, 0.12);
+      }
+
+      .dialog-title {
+        margin: 0;
+        font-size: 18px;
+        color: var(--color-text-title);
+      }
+
+      .dialog-text {
+        margin: 10px 0 0;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--color-text-secondary);
+      }
+
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .empty-card {
+        display: grid;
+        place-items: center;
+        min-height: 154px;
+        text-align: center;
+        gap: 10px;
+      }
+
+      .empty-illustration {
+        width: 62px;
+        height: 62px;
+        border-radius: 18px;
+        background:
+          linear-gradient(180deg, rgba(232, 248, 243, 0.92), rgba(232, 248, 243, 0.34)),
+          #fff;
+      }
+
+      .mini-shell {
+        overflow: hidden;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 22px;
+        background: #fff;
+      }
+
+      .mini-shell-head,
+      .mini-toolbar,
+      .mini-form-row,
+      .mini-tree-pane,
+      .mini-table-pane {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mini-shell-head {
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(229, 234, 231, 0.88);
+      }
+
+      .mini-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .mini-layout {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        min-height: 168px;
+      }
+
+      .mini-tree-pane {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 8px;
+        padding: 14px;
+        background: rgba(248, 252, 250, 0.78);
+        border-right: 1px solid rgba(229, 234, 231, 0.88);
+      }
+
+      .mini-table-pane {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px;
+      }
+
+      .mini-block {
+        height: 34px;
+        border-radius: 12px;
+        background: rgba(243, 250, 248, 0.92);
+      }
+
+      .mini-block.active {
+        background: rgba(232, 248, 243, 1);
+      }
+
+      .mini-toolbar {
+        justify-content: space-between;
+      }
+
+      .mini-toolbar .mini-block {
+        width: 120px;
+      }
+
+      .mini-toolbar .mini-block:last-child {
+        width: 74px;
+      }
+
+      .mini-form {
+        display: grid;
+        gap: 10px;
+      }
+
+      .mini-form-row {
+        align-items: stretch;
+      }
+
+      .mini-label {
+        width: 64px;
+        border-radius: 10px;
+        background: rgba(245, 246, 245, 0.92);
+      }
+
+      .mini-input {
+        flex: 1;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(229, 234, 231, 0.92);
+      }
+
+      .feedback-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: rgba(28, 35, 31, 0.32);
+        backdrop-filter: blur(4px);
+        z-index: 40;
+      }
+
+      .modal-card {
+        width: min(560px, 100%);
+        padding: 24px;
+        border-radius: 28px;
+        background: #fff;
+        box-shadow: var(--shadow-float);
+      }
+
+      .modal-card.large {
+        width: min(760px, 100%);
+      }
+
+      .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .modal-form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 16px;
+      }
+
+      .modal-form .field-block.full {
+        grid-column: 1 / -1;
+      }
+
+      .toast-stack {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        display: grid;
+        gap: 12px;
+        z-index: 50;
+      }
+
+      .toast {
+        min-width: 280px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        color: var(--color-text-main);
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: var(--shadow-float);
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        animation: toast-in 220ms ease;
+      }
+
+      .toast.success {
+        border-color: rgba(12, 155, 114, 0.24);
+      }
+
+      .toast.warning {
+        border-color: rgba(224, 127, 51, 0.24);
+      }
+
+      .toast.error {
+        border-color: rgba(229, 62, 62, 0.24);
+      }
+
+      .toast-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .toast-text {
+        margin-top: 6px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--color-text-secondary);
+      }
+
+      @keyframes toast-in {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1280px) {
+        .hero-stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .catalog-workbench {
+          grid-template-columns: 1fr;
+        }
+
+        .catalog-rail {
+          position: static;
+        }
+      }
+
+      @media (max-width: 1080px) {
+        .catalog-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .catalog-sidebar {
+          position: relative;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid rgba(229, 234, 231, 0.72);
+        }
+
+        .catalog-main {
+          padding-top: 20px;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .catalog-main,
+        .component-section,
+        .hero {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        .hero-top,
+        .section-head {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .hero-title {
+          font-size: 30px;
+        }
+
+        .hero-stats {
+          grid-template-columns: 1fr;
+        }
+
+        .modal-form,
+        .mini-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .preview-label {
+          width: 100%;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="catalog-shell">
+      <aside class="catalog-sidebar">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <div>
+            <div class="brand-title">SSC UI 组件总览</div>
+            <div class="brand-subtitle">按组件类型分类展示当前设计系统</div>
+          </div>
+        </div>
+
+        <div>
+          <p class="sidebar-title">快速查找</p>
+          <label class="search-field">
+            <span class="search-icon" aria-hidden="true"></span>
+            <input id="searchInput" type="text" placeholder="搜索组件名、类型或关键词" />
+          </label>
+        </div>
+
+        <div>
+          <p class="sidebar-title">组件范围</p>
+          <div class="chip-row" id="scopeChips">
+            <button class="filter-chip active" type="button" data-scope="all">全部 <strong>34</strong></button>
+            <button class="filter-chip" type="button" data-scope="base">基础 <strong>27</strong></button>
+            <button class="filter-chip" type="button" data-scope="business">业务 <strong>7</strong></button>
+          </div>
+        </div>
+
+        <div class="component-directory">
+          <div class="sidebar-heading-row">
+            <p class="sidebar-title">组件目录</p>
+            <span class="sidebar-counter" id="visibleComponentCount">34</span>
+          </div>
+          <div class="sidebar-current">
+            <span class="sidebar-current-label">当前浏览</span>
+            <strong id="currentComponentName">AppShell</strong>
+          </div>
+          <nav class="component-nav" id="componentNav"></nav>
+        </div>
+
+        <div class="sidebar-note">
+          <strong>使用方式</strong>
+          <p>左侧就是整个页面的组件导航。你可以直接按组件名跳转，也可以先搜索或按基础/业务筛选后再查看。</p>
+        </div>
+      </aside>
+
+      <main class="catalog-main">
+        <div class="catalog-workbench">
+          <div class="catalog-content">
+            <header class="hero">
+              <div class="hero-top">
+                <div>
+                  <h1 class="hero-title">SSC B 端组件库展示页</h1>
+                  <p class="hero-subtitle">
+                    这份页面把现有设计稿里可复用的组件按类型整理出来。每个类型下都集中展示了常见样式、状态、尺寸或组合方式，方便你后面直接按组件拼页面，而不是每次从业务稿里反推。
+                  </p>
+                  <div class="hero-tags">
+                    <span class="hero-tag">专业稳定</span>
+                    <span class="hero-tag">浅色绿系</span>
+                    <span class="hero-tag">高密度 B 端</span>
+                    <span class="hero-tag">支持持续扩展</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hero-stats">
+                <div class="stat-tile">
+                  <div class="stat-tile-label">组件类型</div>
+                  <div class="stat-tile-value">7</div>
+                  <div class="stat-tile-note">布局、表单、反馈等全部按类分组</div>
+                </div>
+                <div class="stat-tile">
+                  <div class="stat-tile-label">基础组件</div>
+                  <div class="stat-tile-value">27</div>
+                  <div class="stat-tile-note">可直接拼页面的通用零件</div>
+                </div>
+                <div class="stat-tile">
+                  <div class="stat-tile-label">业务组件</div>
+                  <div class="stat-tile-value">7</div>
+                  <div class="stat-tile-note">从现有设计稿里抽出的高频组合块</div>
+                </div>
+                <div class="stat-tile">
+                  <div class="stat-tile-label">已展示变体</div>
+                  <div class="stat-tile-value">40+</div>
+                  <div class="stat-tile-note">含默认、激活、禁用、危险、空状态等</div>
+                </div>
+              </div>
+            </header>
+
+            <div class="catalog-sections" id="catalogSections">
+          <section class="component-section" id="layout" data-section="layout">
+            <div class="section-head">
+              <div>
+                <h2 class="section-title">布局类</h2>
+                <p class="section-desc">用于搭建页面骨架、分区结构和主内容承载区。这里优先解决页面怎么排、模块怎么分、层级怎么稳定。</p>
+              </div>
+              <div class="section-meta"><span data-visible-for="layout">5</span> / 5 个组件</div>
+            </div>
+
+            <div class="component-grid">
+              <article class="component-card" data-scope="base" data-search="appshell 应用框架 布局 shell sidebar content">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">AppShell</h3>
+                    <p class="component-desc">应用级骨架，负责左侧导航、顶部标题和内容区的整体层级。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="mini-shell">
+                    <div class="mini-shell-head">
+                      <span class="mini-title">管理后台</span>
+                      <span class="status-tag success">在线</span>
+                    </div>
+                    <div class="mini-layout">
+                      <div class="mini-tree-pane">
+                        <div class="mini-block active"></div>
+                        <div class="mini-block"></div>
+                        <div class="mini-block"></div>
+                      </div>
+                      <div class="mini-table-pane">
+                        <div class="mini-toolbar">
+                          <div class="mini-block"></div>
+                          <div class="mini-block"></div>
+                        </div>
+                        <div class="mini-block"></div>
+                        <div class="mini-block"></div>
+                        <div class="mini-block"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">左侧导航</span>
+                  <span class="variant-tag">右侧主内容</span>
+                  <span class="variant-tag">适合列表页 / 详情页</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="contentpanel 内容容器 卡片 白底">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">ContentPanel</h3>
+                    <p class="component-desc">承载页面主内容的白色面板，统一圆角、阴影和边距。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row">
+                      <span class="preview-label">默认</span>
+                      <div class="mini-shell" style="flex: 1;">
+                        <div class="mini-shell-head"><span class="mini-title">主内容区</span></div>
+                        <div style="padding: 16px; display: grid; gap: 10px;">
+                          <div class="mini-block"></div>
+                          <div class="mini-block"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">嵌套分区</span>
+                      <div class="mini-shell" style="flex: 1;">
+                        <div style="padding: 16px; display: grid; gap: 10px;">
+                          <div class="mini-block active"></div>
+                          <div class="mini-block"></div>
+                          <div class="mini-block"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="token-list">
+                  <span class="token-chip">radius-xl</span>
+                  <span class="token-chip">shadow-panel</span>
+                  <span class="token-chip">color-surface</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="pageheader 页面标题 返回 状态">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">PageHeader</h3>
+                    <p class="component-desc">页面标题区，可承载返回、状态、描述和右侧操作按钮。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row">
+                      <span class="preview-label">标题</span>
+                      <div style="display: grid; gap: 6px;">
+                        <strong style="font-size: 22px; color: var(--color-text-title);">系统配置</strong>
+                        <span class="helper-text">用于展示模块标题和辅助说明</span>
+                      </div>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">带状态</span>
+                      <strong style="font-size: 22px; color: var(--color-text-title);">角色权限</strong>
+                      <span class="status-tag success">启用中</span>
+                      <span class="status-tag warning">待发布</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">仅标题</span>
+                  <span class="variant-tag">返回 + 标题</span>
+                  <span class="variant-tag">标题 + 状态 + 操作</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="sectionheader 分区标题 带操作">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">SectionHeader</h3>
+                    <p class="component-desc">内容分区标题，适合表格标题、卡片标题和局部操作栏。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row" style="justify-content: space-between;">
+                      <div>
+                        <strong style="font-size: 16px; color: var(--color-text-title);">成员列表</strong>
+                        <div class="helper-text">12 位成员，支持批量管理</div>
+                      </div>
+                      <button class="btn secondary" type="button">新增成员</button>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">极简</span>
+                      <strong style="font-size: 16px; color: var(--color-text-title);">接口信息</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">默认</span>
+                  <span class="variant-tag">带数量说明</span>
+                  <span class="variant-tag">带操作按钮</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="splitview 左右分栏 树详情">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">SplitView</h3>
+                    <p class="component-desc">左右分栏容器，适合组织树、权限树、目录与详情的主从结构。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row">
+                      <span class="preview-label">40 / 60</span>
+                      <div class="mini-shell" style="flex: 1;">
+                        <div class="mini-layout" style="grid-template-columns: 40% 1fr;">
+                          <div class="mini-tree-pane">
+                            <div class="mini-block active"></div>
+                            <div class="mini-block"></div>
+                          </div>
+                          <div class="mini-table-pane">
+                            <div class="mini-block"></div>
+                            <div class="mini-block"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">50 / 50</span>
+                      <div class="mini-shell" style="flex: 1;">
+                        <div class="mini-layout" style="grid-template-columns: 1fr 1fr;">
+                          <div class="mini-tree-pane"><div class="mini-block active"></div></div>
+                          <div class="mini-table-pane"><div class="mini-block"></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">组织树 + 详情</span>
+                  <span class="variant-tag">目录 + 表格</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="component-section" id="form" data-section="form">
+            <div class="section-head">
+              <div>
+                <h2 class="section-title">表单类</h2>
+                <p class="section-desc">用于录入、编辑和查看字段信息。重点统一控件高度、标签层级、错误提示和只读表现。</p>
+              </div>
+              <div class="section-meta"><span data-visible-for="form">5</span> / 5 个组件</div>
+            </div>
+
+            <div class="component-grid">
+              <article class="component-card" data-scope="base" data-search="textinput 输入框 占位 只读 错误">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">TextInput</h3>
+                    <p class="component-desc">单行文本输入，适合名称、编码、链接等基础字段。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row"><span class="preview-label">占位</span><div class="input-shell placeholder">请输入角色名称</div></div>
+                    <div class="preview-row"><span class="preview-label">已填</span><div class="input-shell">财务管理员</div></div>
+                    <div class="preview-row"><span class="preview-label">错误</span><div class="input-shell error">角色编码已存在</div></div>
+                    <div class="preview-row"><span class="preview-label">禁用</span><div class="input-shell disabled">系统自动生成</div></div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">默认</span>
+                  <span class="variant-tag">占位</span>
+                  <span class="variant-tag">错误</span>
+                  <span class="variant-tag">禁用</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="searchfield 搜索 筛选 输入框">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">SearchField</h3>
+                    <p class="component-desc">带搜索语义的输入框，适合列表筛选、目录搜索和弹窗检索。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="search-field" style="max-width: 320px;">
+                      <span class="search-icon" aria-hidden="true"></span>
+                      <input type="text" value="" placeholder="搜索成员姓名 / 手机号" />
+                    </div>
+                    <div class="search-field" style="max-width: 320px;">
+                      <span class="search-icon" aria-hidden="true"></span>
+                      <input type="text" value="张" />
+                    </div>
+                  </div>
+                </div>
+                <div class="token-list">
+                  <span class="token-chip">control-height 40</span>
+                  <span class="token-chip">radius pill</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="select 下拉 已选 禁用">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Select</h3>
+                    <p class="component-desc">下拉选择控件，用于状态、数据范围、归属系列等离散选项。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row"><span class="preview-label">默认</span><div class="select-shell">请选择状态 <span class="caret"></span></div></div>
+                    <div class="preview-row"><span class="preview-label">已选</span><div class="select-shell">启用中 <span class="caret"></span></div></div>
+                    <div class="preview-row"><span class="preview-label">禁用</span><div class="select-shell disabled">不可修改 <span class="caret"></span></div></div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">默认</span>
+                  <span class="variant-tag">已选</span>
+                  <span class="variant-tag">禁用</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="textarea 多行 描述 说明">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">TextArea</h3>
+                    <p class="component-desc">多行输入，适合描述、备注和规则说明。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row"><span class="preview-label">占位</span><div class="textarea-shell placeholder" style="min-width: 260px;">请输入角色描述</div></div>
+                    <div class="preview-row"><span class="preview-label">已填</span><div class="textarea-shell" style="min-width: 260px;">用于管理财务模块成员的页面查看、导出与审批权限。</div></div>
+                  </div>
+                </div>
+                <div class="field-block">
+                  <span class="helper-text">建议用于说明类字段，默认支持更长内容。</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="readonlyfield helpertext inlineerrortext 只读 说明 错误">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">ReadonlyField</h3>
+                    <p class="component-desc">适合详情页中不可编辑的字段，同时可搭配说明文案和错误提示。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="field-block">
+                      <span class="field-label">系统编码</span>
+                      <div class="readonly-shell">SSC_ROLE_001</div>
+                      <span class="helper-text">创建后不可修改</span>
+                    </div>
+                    <div class="field-block">
+                      <span class="field-label">权限策略 <strong>*</strong></span>
+                      <div class="readonly-shell disabled">当前配置不允许修改</div>
+                      <span class="error-text">请先解除发布锁定后再编辑</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">只读</span>
+                  <span class="variant-tag">说明文案</span>
+                  <span class="variant-tag">错误提示</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="component-section" id="selection" data-section="selection">
+            <div class="section-head">
+              <div>
+                <h2 class="section-title">选择控制</h2>
+                <p class="section-desc">用于做单选、多选和启停控制，强调状态清晰、密集场景可识别。</p>
+              </div>
+              <div class="section-meta"><span data-visible-for="selection">3</span> / 3 个组件</div>
+            </div>
+
+            <div class="component-grid">
+              <article class="component-card" data-scope="base" data-search="checkbox 多选 未选 已选 禁用">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Checkbox</h3>
+                    <p class="component-desc">多选控制，常用于表格批量操作和权限树勾选。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="control-cluster">
+                    <span class="check"><span class="check-box"></span>未选</span>
+                    <span class="check selected"><span class="check-box"></span>已选</span>
+                    <span class="check disabled"><span class="check-box"></span>禁用</span>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">默认</span>
+                  <span class="variant-tag">已选</span>
+                  <span class="variant-tag">禁用</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="radio 单选 未选 已选 禁用">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Radio</h3>
+                    <p class="component-desc">单选控制，适合选择唯一数据范围、唯一类型或唯一模式。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="control-cluster">
+                    <span class="radio"><span class="radio-box"></span>默认</span>
+                    <span class="radio selected"><span class="radio-box"></span>当前选中</span>
+                    <span class="radio disabled"><span class="radio-box"></span>禁用</span>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">默认</span>
+                  <span class="variant-tag">选中</span>
+                  <span class="variant-tag">禁用</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="switch 开关 启用 停用">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Switch</h3>
+                    <p class="component-desc">启停型控制，常用于接口开关、功能开关和状态切换列表。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="control-cluster">
+                    <span class="switch on"><span class="switch-track"><span class="switch-thumb"></span></span>启用</span>
+                    <span class="switch"><span class="switch-track"><span class="switch-thumb"></span></span>停用</span>
+                    <span class="switch disabled"><span class="switch-track"><span class="switch-thumb"></span></span>禁用</span>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">开</span>
+                  <span class="variant-tag">关</span>
+                  <span class="variant-tag">禁用</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="component-section" id="data-display" data-section="data-display">
+            <div class="section-head">
+              <div>
+                <h2 class="section-title">数据展示</h2>
+                <p class="section-desc">用于承载状态、层级、表格、统计和摘要信息，是 B 端页面信息密度的核心区域。</p>
+              </div>
+              <div class="section-meta"><span data-visible-for="data-display">7</span> / 7 个组件</div>
+            </div>
+
+            <div class="component-grid">
+              <article class="component-card" data-scope="base" data-search="statcard 数据卡 统计">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">StatCard</h3>
+                    <p class="component-desc">顶部数据概览卡，用于展示数量、趋势和关键状态。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-row">
+                    <div class="stat-card">
+                      <div class="helper-text">已接入系统</div>
+                      <div class="stat-card-value">24</div>
+                      <div class="helper-text">较昨日 +3</div>
+                    </div>
+                    <div class="stat-card">
+                      <div class="helper-text">待处理审批</div>
+                      <div class="stat-card-value">08</div>
+                      <div class="helper-text">需要重点关注</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">图标 + 标题 + 数值</span>
+                  <span class="variant-tag">适合概览页</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="infocard 信息卡 摘要 编码">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">InfoCard</h3>
+                    <p class="component-desc">用于展示单条摘要信息，例如编码、归属、负责人和其他轻量详情。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-row">
+                    <div class="info-card">
+                      <strong>组织编码</strong>
+                      <div class="helper-text">ORG-001-SSC</div>
+                    </div>
+                    <div class="info-card">
+                      <strong>负责人</strong>
+                      <div class="helper-text">张晨 / 财务中心</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">标题 + 内容</span>
+                  <span class="variant-tag">详情摘要</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="statustag 状态标签 success warning default disabled">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">StatusTag</h3>
+                    <p class="component-desc">用于状态标记，适合表格列、详情头部和卡片摘要中的轻量状态表达。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-row">
+                    <span class="status-tag success">已启用</span>
+                    <span class="status-tag warning">待接入</span>
+                    <span class="status-tag default">草稿</span>
+                    <span class="status-tag disabled">停用</span>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">success</span>
+                  <span class="variant-tag">warning</span>
+                  <span class="variant-tag">default</span>
+                  <span class="variant-tag">disabled</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="badge 徽标 数字 计数">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Badge</h3>
+                    <p class="component-desc">用于承载数字或数量提示，适合列表角标、树节点人数和待处理计数。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-row">
+                    <span class="badge">12</span>
+                    <span class="badge soft">8</span>
+                    <span class="badge warning">3</span>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">默认</span>
+                  <span class="variant-tag">soft</span>
+                  <span class="variant-tag">warning</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="treenode treelist 树节点 展开 收起 激活 人数">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">TreeNode</h3>
+                    <p class="component-desc">用于组织树、权限树和目录树，重点支持展开、收起、选中和数量提示。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="tree-demo">
+                    <div class="tree-node"><span class="tree-arrow"></span><span>系统权限</span></div>
+                    <div class="tree-node"><span class="tree-arrow expanded"></span><span>组织架构</span><span class="badge soft">18</span></div>
+                    <div class="tree-node active tree-indent"><span class="tree-arrow"></span><span>财务中心</span><span class="badge">6</span></div>
+                    <div class="tree-node tree-indent"><span class="tree-arrow"></span><span>人力中心</span></div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">collapsed</span>
+                  <span class="variant-tag">expanded</span>
+                  <span class="variant-tag">active</span>
+                  <span class="variant-tag">with-badge</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="datatable 表格 selectable switch-table 分页">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">DataTable</h3>
+                    <p class="component-desc">核心列表组件。这里把普通表格、可勾选表格和带开关表格放在一起展示。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row">
+                      <span class="preview-label">普通</span>
+                      <div class="table-demo" style="flex: 1;">
+                        <table>
+                          <thead><tr><th>系统名称</th><th>状态</th><th>操作</th></tr></thead>
+                          <tbody>
+                            <tr><td>财务系统</td><td><span class="status-tag success">已启用</span></td><td><span class="table-actions"><span>查看</span><span>编辑</span></span></td></tr>
+                            <tr><td>OA 平台</td><td><span class="status-tag warning">待接入</span></td><td><span class="table-actions"><span>查看</span><span>配置</span></span></td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">可选</span>
+                      <div class="table-demo" style="flex: 1;">
+                        <table>
+                          <thead><tr><th><span class="check selected"><span class="check-box"></span></span></th><th>成员姓名</th><th>部门</th></tr></thead>
+                          <tbody>
+                            <tr><td><span class="check selected"><span class="check-box"></span></span></td><td>张晨</td><td>财务中心</td></tr>
+                            <tr><td><span class="check"><span class="check-box"></span></span></td><td>陈琳</td><td>人力中心</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">带开关</span>
+                      <div class="table-demo" style="flex: 1;">
+                        <table>
+                          <thead><tr><th>接口名称</th><th>开关</th><th>状态</th></tr></thead>
+                          <tbody>
+                            <tr><td>用户同步</td><td><span class="switch on"><span class="switch-track"><span class="switch-thumb"></span></span></span></td><td><span class="status-tag success">已启用</span></td></tr>
+                            <tr><td>组织同步</td><td><span class="switch"><span class="switch-track"><span class="switch-thumb"></span></span></span></td><td><span class="status-tag default">已关闭</span></td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">basic-table</span>
+                  <span class="variant-tag">selectable-table</span>
+                  <span class="variant-tag">switch-table</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="pagination 分页 当前页 上下页">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Pagination</h3>
+                    <p class="component-desc">列表底部分页器，适合标准后台列表页。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="pager">
+                    <span class="page-pill">&lt;</span>
+                    <span class="page-pill active">1</span>
+                    <span class="page-pill">2</span>
+                    <span class="page-pill">3</span>
+                    <span class="page-pill">...</span>
+                    <span class="page-pill">10</span>
+                    <span class="page-pill">&gt;</span>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">默认</span>
+                  <span class="variant-tag">当前页高亮</span>
+                  <span class="variant-tag">上下页切换</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="component-section" id="feedback" data-section="feedback">
+            <div class="section-head">
+              <div>
+                <h2 class="section-title">反馈类</h2>
+                <p class="section-desc">用于提示结果、阻断操作、承载空状态或风险确认。这个区域带了真实交互，点按钮就能直接看效果。</p>
+              </div>
+              <div class="section-meta"><span data-visible-for="feedback">5</span> / 5 个组件</div>
+            </div>
+
+            <div class="component-grid">
+              <article class="component-card" data-scope="base" data-search="toast 提示 成功 错误 警告">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Toast</h3>
+                    <p class="component-desc">适合轻量反馈，不打断当前流程。支持成功、警告、错误三类语义。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="feedback-actions">
+                    <button class="btn primary" type="button" data-toast="success">成功提示</button>
+                    <button class="btn secondary" type="button" data-toast="warning">警告提示</button>
+                    <button class="btn danger" type="button" data-toast="error">错误提示</button>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">success</span>
+                  <span class="variant-tag">warning</span>
+                  <span class="variant-tag">error</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="inlinealert 提示条 警告 错误 成功">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">InlineAlert</h3>
+                    <p class="component-desc">在当前表单或区块内做上下文提示，适合权限限制、配置说明和风险提醒。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="alert success">该角色已同步到 3 个系统，可直接保存配置。</div>
+                    <div class="alert warning">当前配置会影响 18 位成员的数据查看范围。</div>
+                    <div class="alert error">你没有删除系统级角色的权限。</div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">success</span>
+                  <span class="variant-tag">warning</span>
+                  <span class="variant-tag">error</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="emptystate 空状态 无数据">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">EmptyState</h3>
+                    <p class="component-desc">用于列表为空、尚未配置或筛选无结果时的占位表达。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-row">
+                    <div class="empty-card" style="flex: 1;">
+                      <div class="empty-illustration"></div>
+                      <strong>暂无成员数据</strong>
+                      <span class="helper-text">你可以先添加成员，或调整筛选条件。</span>
+                    </div>
+                    <div class="empty-card" style="flex: 1;">
+                      <div class="empty-illustration"></div>
+                      <strong>未配置权限</strong>
+                      <span class="helper-text">请先选择角色，再配置可访问模块。</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">列表空</span>
+                  <span class="variant-tag">配置空</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="modal 表单弹窗 列表弹窗 宽弹窗">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Modal</h3>
+                    <p class="component-desc">通用弹窗容器，可承载表单、选择列表或更宽的信息编辑界面。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="feedback-actions">
+                    <button class="btn secondary" type="button" data-modal="form">表单弹窗</button>
+                    <button class="btn secondary" type="button" data-modal="selection">列表弹窗</button>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">form-modal</span>
+                  <span class="variant-tag">selection-modal</span>
+                  <span class="variant-tag">wide-modal</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="confirmdialog dangerconfirm 二次确认 删除 离开">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">ConfirmDialog</h3>
+                    <p class="component-desc">用于关键动作二次确认，支持中性确认和危险操作确认。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="feedback-actions">
+                    <button class="btn secondary" type="button" data-modal="confirm">普通确认</button>
+                    <button class="btn danger" type="button" data-modal="danger">危险确认</button>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">默认确认</span>
+                  <span class="variant-tag">危险操作</span>
+                  <span class="variant-tag">离开确认</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="component-section" id="action" data-section="action">
+            <div class="section-head">
+              <div>
+                <h2 class="section-title">操作类</h2>
+                <p class="section-desc">承接页面主操作和局部触发动作。这里优先统一按钮语义、层级和操作权重。</p>
+              </div>
+              <div class="section-meta"><span data-visible-for="action">2</span> / 2 个组件</div>
+            </div>
+
+            <div class="component-grid">
+              <article class="component-card" data-scope="base" data-search="button 按钮 主按钮 次按钮 危险 文本 hover 禁用 icon text 图标 文字">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">Button</h3>
+                    <p class="component-desc">主次关系最明确的操作组件，适合提交、保存、新建、删除和轻操作入口。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-stack">
+                    <div class="preview-row">
+                      <span class="preview-label">默认</span>
+                      <button class="btn primary" type="button">主按钮</button>
+                      <button class="btn secondary" type="button">次按钮</button>
+                      <button class="btn danger" type="button">危险按钮</button>
+                      <button class="btn ghost" type="button">文本按钮</button>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">Hover</span>
+                      <button class="btn primary hover" type="button">主按钮</button>
+                      <button class="btn secondary hover" type="button">次按钮</button>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">禁用</span>
+                      <button class="btn primary" type="button" disabled>主按钮</button>
+                      <button class="btn secondary" type="button" disabled>次按钮</button>
+                    </div>
+                    <div class="preview-row">
+                      <span class="preview-label">图标 + 文字</span>
+                      <button class="btn primary" type="button"><span class="mini-icon"></span>新增成员</button>
+                      <button class="btn secondary" type="button"><span class="mini-icon"></span>批量导出</button>
+                      <button class="btn ghost" type="button"><span class="mini-icon"></span>更多操作</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">primary</span>
+                  <span class="variant-tag">secondary</span>
+                  <span class="variant-tag">danger</span>
+                  <span class="variant-tag">ghost</span>
+                  <span class="variant-tag">icon+text</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="base" data-search="iconbutton 图标按钮 返回 收起 关闭">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">IconButton</h3>
+                    <p class="component-desc">适合承载局部工具型动作，例如返回、折叠、关闭和更多操作。</p>
+                  </div>
+                  <span class="component-kind">基础组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="control-cluster">
+                    <button class="icon-btn" type="button" aria-label="返回"><span class="caret" style="transform: rotate(135deg);"></span></button>
+                    <button class="icon-btn" type="button" aria-label="收起"><span class="menu-glyph"></span></button>
+                    <button class="icon-btn" type="button" aria-label="关闭"><span class="close-glyph"></span></button>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">返回</span>
+                  <span class="variant-tag">收起</span>
+                  <span class="variant-tag">关闭</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="component-section" id="business" data-section="business">
+            <div class="section-head">
+              <div>
+                <h2 class="section-title">业务组件</h2>
+                <p class="section-desc">这些是从现有页面里抽出来的高频组合块。你后面做具体业务页时，优先复用这一层，速度会比从基础组件重新拼更快。</p>
+              </div>
+              <div class="section-meta"><span data-visible-for="business">7</span> / 7 个组件</div>
+            </div>
+
+            <div class="component-grid">
+              <article class="component-card" data-scope="business" data-search="orgdirectorypanel 组织树 面板">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">OrgDirectoryPanel</h3>
+                    <p class="component-desc">由 SectionHeader、TreeList、TreeNode 组成，适合组织架构和处理组目录。</p>
+                  </div>
+                  <span class="component-kind">业务组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="mini-shell">
+                    <div class="mini-shell-head">
+                      <span class="mini-title">组织目录</span>
+                      <span class="badge soft">24</span>
+                    </div>
+                    <div class="mini-tree-pane" style="border-right: 0; background: #fff;">
+                      <div class="mini-block active"></div>
+                      <div class="mini-block"></div>
+                      <div class="mini-block"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">组织架构</span>
+                  <span class="variant-tag">处理组</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="business" data-search="groupmembertable 成员表 选择分页">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">GroupMemberTable</h3>
+                    <p class="component-desc">由可选择 DataTable 和 Pagination 组成，适合成员选择、负责人设置等场景。</p>
+                  </div>
+                  <span class="component-kind">业务组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="table-demo">
+                    <table>
+                      <thead><tr><th><span class="check selected"><span class="check-box"></span></span></th><th>姓名</th><th>角色</th></tr></thead>
+                      <tbody>
+                        <tr><td><span class="check selected"><span class="check-box"></span></span></td><td>李雯</td><td>处理组成员</td></tr>
+                        <tr><td><span class="check"><span class="check-box"></span></span></td><td>高航</td><td>部门负责人</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">批量选择</span>
+                  <span class="variant-tag">带分页</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="business" data-search="serviceaccesssummary 接入统计 概览卡">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">ServiceAccessSummary</h3>
+                    <p class="component-desc">顶部概览组合块，适合系统接入、服务状态、接口总览等首页概况。</p>
+                  </div>
+                  <span class="component-kind">业务组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="preview-row">
+                    <div class="stat-card">
+                      <div class="helper-text">已接入系列</div>
+                      <div class="stat-card-value">12</div>
+                    </div>
+                    <div class="stat-card">
+                      <div class="helper-text">运行中系统</div>
+                      <div class="stat-card-value">18</div>
+                    </div>
+                    <div class="stat-card">
+                      <div class="helper-text">异常接口</div>
+                      <div class="stat-card-value">03</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">首页概览</span>
+                  <span class="variant-tag">指标横排</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="business" data-search="servicedetailform 详情表单 只读 状态">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">ServiceDetailForm</h3>
+                    <p class="component-desc">由 Form、ReadonlyField、StatusTag 组成，适合系统详情和配置详情页。</p>
+                  </div>
+                  <span class="component-kind">业务组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="mini-form">
+                    <div class="mini-form-row"><div class="mini-label"></div><div class="mini-input"></div></div>
+                    <div class="mini-form-row"><div class="mini-label"></div><div class="mini-input"></div></div>
+                    <div class="preview-row"><span class="status-tag success">已启用</span><span class="status-tag default">只读字段</span></div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">详情页</span>
+                  <span class="variant-tag">只读 + 状态</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="business" data-search="sdkinterfacetable 接口列表 开关表格">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">SdkInterfaceTable</h3>
+                    <p class="component-desc">接口管理表格组合，包含状态标签、开关列和分页。</p>
+                  </div>
+                  <span class="component-kind">业务组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="table-demo">
+                    <table>
+                      <thead><tr><th>接口</th><th>状态</th><th>开关</th></tr></thead>
+                      <tbody>
+                        <tr><td>账号同步</td><td><span class="status-tag success">正常</span></td><td><span class="switch on"><span class="switch-track"><span class="switch-thumb"></span></span></span></td></tr>
+                        <tr><td>组织同步</td><td><span class="status-tag warning">待配置</span></td><td><span class="switch"><span class="switch-track"><span class="switch-thumb"></span></span></span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">接口列表</span>
+                  <span class="variant-tag">开关列</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="business" data-search="selectionsummarycard 已选汇总 选择弹窗">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">SelectionSummaryCard</h3>
+                    <p class="component-desc">用于选择弹窗和批量操作中的结果汇总，强调当前对象、已选数量和后续动作。</p>
+                  </div>
+                  <span class="component-kind">业务组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="selection-summary">
+                    <strong>已选择 8 位成员</strong>
+                    <div class="helper-text">当前归属财务中心，可继续批量授权。</div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">当前对象信息</span>
+                  <span class="variant-tag">已选数量</span>
+                </div>
+              </article>
+
+              <article class="component-card" data-scope="business" data-search="dangerconfirmdialog 风险确认 删除 二次确认">
+                <div class="component-card-head">
+                  <div>
+                    <h3 class="component-name">DangerConfirmDialog</h3>
+                    <p class="component-desc">用于删除、离开未保存页面和其他不可逆操作的高风险确认。</p>
+                  </div>
+                  <span class="component-kind">业务组件</span>
+                </div>
+                <div class="preview-panel">
+                  <div class="dialog-preview">
+                    <h4 class="dialog-title">删除处理组</h4>
+                    <p class="dialog-text">删除后无法恢复，已绑定成员将失去对应的处理权限。</p>
+                    <div class="dialog-actions">
+                      <button class="btn secondary" type="button">取消</button>
+                      <button class="btn danger" type="button">确认删除</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="variant-tags">
+                  <span class="variant-tag">危险确认</span>
+                  <span class="variant-tag">不可逆操作</span>
+                </div>
+              </article>
+            </div>
+          </section>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    <div class="overlay hidden" id="overlay" aria-hidden="true">
+      <div class="modal-card" id="overlayCard"></div>
+    </div>
+    <div class="toast-stack" id="toastStack"></div>
+    <pre id="selfTestOutput" class="hidden"></pre>
+
+    <script>
+      const searchInput = document.getElementById("searchInput");
+      const scopeChips = Array.from(document.querySelectorAll("#scopeChips .filter-chip"));
+      const cards = Array.from(document.querySelectorAll(".component-card"));
+      const sections = Array.from(document.querySelectorAll(".component-section"));
+      const overlay = document.getElementById("overlay");
+      const overlayCard = document.getElementById("overlayCard");
+      const toastStack = document.getElementById("toastStack");
+      const selfTestOutput = document.getElementById("selfTestOutput");
+      const componentNav = document.getElementById("componentNav");
+      const currentComponentName = document.getElementById("currentComponentName");
+      const visibleComponentCount = document.getElementById("visibleComponentCount");
+      let componentLinks = [];
+      const familyLabelMap = {
+        layout: "布局类",
+        form: "表单类",
+        selection: "选择控制",
+        "data-display": "数据展示",
+        feedback: "反馈类",
+        action: "操作类",
+        business: "业务组件"
+      };
+
+      const modalTemplates = {
+        form: {
+          className: "modal-card",
+          html: `
+            <div class="modal-head">
+              <div>
+                <h3 class="dialog-title">新建角色</h3>
+                <p class="dialog-text">用于展示标准表单弹窗结构。</p>
+              </div>
+              <button class="icon-btn" type="button" data-close-overlay aria-label="关闭"><span class="close-glyph"></span></button>
+            </div>
+            <div class="modal-form">
+              <div class="field-block">
+                <span class="field-label">角色名称</span>
+                <div class="input-shell">财务主管</div>
+              </div>
+              <div class="field-block">
+                <span class="field-label">状态</span>
+                <div class="select-shell">启用中 <span class="caret"></span></div>
+              </div>
+              <div class="field-block full">
+                <span class="field-label">角色描述</span>
+                <div class="textarea-shell">可查看财务模块并具备导出权限。</div>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn secondary" type="button" data-close-overlay>取消</button>
+              <button class="btn primary" type="button" data-toast-trigger="success">保存</button>
+            </div>
+          `
+        },
+        selection: {
+          className: "modal-card large",
+          html: `
+            <div class="modal-head">
+              <div>
+                <h3 class="dialog-title">选择成员</h3>
+                <p class="dialog-text">用于展示较宽的列表型弹窗结构。</p>
+              </div>
+              <button class="icon-btn" type="button" data-close-overlay aria-label="关闭"><span class="close-glyph"></span></button>
+            </div>
+            <div class="preview-stack">
+              <div class="selection-summary">
+                <strong>当前已选 3 位成员</strong>
+                <div class="helper-text">可跨页继续勾选，提交后统一生效。</div>
+              </div>
+              <div class="table-demo">
+                <table>
+                  <thead><tr><th><span class="check selected"><span class="check-box"></span></span></th><th>姓名</th><th>部门</th><th>角色</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="check selected"><span class="check-box"></span></span></td><td>李明</td><td>财务中心</td><td>组员</td></tr>
+                    <tr><td><span class="check"><span class="check-box"></span></span></td><td>王哲</td><td>运营中心</td><td>负责人</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn secondary" type="button" data-close-overlay>取消</button>
+              <button class="btn primary" type="button" data-toast-trigger="success">确认选择</button>
+            </div>
+          `
+        },
+        confirm: {
+          className: "modal-card",
+          html: `
+            <div class="modal-head">
+              <div>
+                <h3 class="dialog-title">确认离开当前页面？</h3>
+                <p class="dialog-text">你有未保存的修改，离开后本次编辑内容将不会保留。</p>
+              </div>
+              <button class="icon-btn" type="button" data-close-overlay aria-label="关闭"><span class="close-glyph"></span></button>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn secondary" type="button" data-close-overlay>继续编辑</button>
+              <button class="btn primary" type="button" data-toast-trigger="warning">确认离开</button>
+            </div>
+          `
+        },
+        danger: {
+          className: "modal-card",
+          html: `
+            <div class="modal-head">
+              <div>
+                <h3 class="dialog-title">确认删除该角色？</h3>
+                <p class="dialog-text">删除后无法恢复，且关联成员会立即失去当前权限。</p>
+              </div>
+              <button class="icon-btn" type="button" data-close-overlay aria-label="关闭"><span class="close-glyph"></span></button>
+            </div>
+            <div class="alert error">此操作会同步影响 18 位成员，请确认风险。</div>
+            <div class="dialog-actions">
+              <button class="btn secondary" type="button" data-close-overlay>取消</button>
+              <button class="btn danger" type="button" data-toast-trigger="error">确认删除</button>
+            </div>
+          `
+        }
+      };
+
+      let currentScope = "all";
+      let toastId = 0;
+
+      function normalizeText(value) {
+        return String(value || "").trim().toLowerCase();
+      }
+
+      function slugify(text) {
+        return String(text || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+
+      function buildComponentNav() {
+        cards.forEach((card, index) => {
+          const name = card.querySelector(".component-name")?.textContent.trim() || `组件 ${index + 1}`;
+          const familyKey = card.closest(".component-section")?.dataset.section || "";
+          const familyLabel = familyLabelMap[familyKey] || "";
+          card.dataset.componentName = name;
+          card.dataset.componentFamily = familyLabel;
+          card.id = card.id || `component-${slugify(name) || index + 1}-${index + 1}`;
+        });
+
+        componentNav.innerHTML = cards
+          .map(
+            (card) => `
+              <a class="section-link component-link" href="#${card.id}" data-target="${card.id}" data-scope="${card.dataset.scope || ""}">
+                <span class="section-link-label">
+                  <span class="section-dot"></span>
+                  <span class="component-link-name">${card.dataset.componentName}</span>
+                </span>
+                <span class="component-link-meta">${card.dataset.componentFamily}</span>
+              </a>
+            `
+          )
+          .join("");
+
+        componentLinks = Array.from(componentNav.querySelectorAll(".component-link"));
+        componentLinks.forEach((link) => {
+          link.addEventListener("click", () => {
+            setActiveComponent(link.dataset.target);
+          });
+        });
+      }
+
+      function setActiveComponent(targetId) {
+        let activeText = "";
+        componentLinks.forEach((link) => {
+          const isActive = link.dataset.target === targetId;
+          link.classList.toggle("active", isActive);
+          if (isActive) activeText = link.querySelector(".component-link-name")?.textContent.trim() || "";
+        });
+        cards.forEach((card) => {
+          card.classList.toggle("nav-active", card.id === targetId);
+        });
+        if (currentComponentName && activeText) currentComponentName.textContent = activeText;
+      }
+
+      function updateSectionCounts() {
+        sections.forEach((section) => {
+          const sectionKey = section.dataset.section;
+          const visibleCards = section.querySelectorAll(".component-card:not(.hidden)").length;
+          const countEl = document.querySelector(`[data-visible-for="${sectionKey}"]`);
+          if (countEl) countEl.textContent = String(visibleCards);
+          section.classList.toggle("hidden", visibleCards === 0);
+        });
+
+        componentLinks.forEach((link) => {
+          const card = document.getElementById(link.dataset.target);
+          link.classList.toggle("hidden", !card || card.classList.contains("hidden"));
+        });
+
+        const visibleCards = cards.filter((card) => !card.classList.contains("hidden"));
+        if (visibleComponentCount) visibleComponentCount.textContent = String(visibleCards.length);
+
+        const activeHidden = componentLinks.some((link) => link.classList.contains("active") && link.classList.contains("hidden"));
+        if (visibleCards.length && (activeHidden || !componentLinks.some((link) => link.classList.contains("active")))) {
+          setActiveComponent(visibleCards[0].id);
+        }
+      }
+
+      function applyFilters() {
+        const keyword = normalizeText(searchInput.value);
+        cards.forEach((card) => {
+          const matchesScope = currentScope === "all" || card.dataset.scope === currentScope;
+          const haystack = normalizeText(card.dataset.search + " " + card.textContent);
+          const matchesKeyword = !keyword || haystack.includes(keyword);
+          card.classList.toggle("hidden", !(matchesScope && matchesKeyword));
+        });
+        updateSectionCounts();
+      }
+
+      function openModal(name) {
+        const template = modalTemplates[name];
+        if (!template) return;
+        overlayCard.className = template.className;
+        overlayCard.innerHTML = template.html;
+        overlay.classList.remove("hidden");
+        overlay.setAttribute("aria-hidden", "false");
+      }
+
+      function closeModal() {
+        overlay.classList.add("hidden");
+        overlay.setAttribute("aria-hidden", "true");
+        overlayCard.innerHTML = "";
+      }
+
+      function showToast(type) {
+        toastId += 1;
+        const config = {
+          success: { title: "保存成功", text: "组件展示页已更新，当前变体已可直接查看。" },
+          warning: { title: "请注意", text: "当前操作会影响已有配置，请先检查依赖关系。" },
+          error: { title: "删除提醒", text: "危险操作已触发确认逻辑，请谨慎继续。" }
+        }[type] || { title: "提示", text: "操作已完成。" };
+
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.dataset.toastId = String(toastId);
+        toast.innerHTML = `<div class="toast-title">${config.title}</div><div class="toast-text">${config.text}</div>`;
+        toastStack.appendChild(toast);
+        window.setTimeout(() => {
+          toast.remove();
+        }, 2200);
+      }
+
+      searchInput.addEventListener("input", applyFilters);
+
+      scopeChips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          currentScope = chip.dataset.scope;
+          scopeChips.forEach((item) => item.classList.toggle("active", item === chip));
+          applyFilters();
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        const toastButton = event.target.closest("[data-toast]");
+        if (toastButton) {
+          showToast(toastButton.dataset.toast);
+        }
+
+        const modalButton = event.target.closest("[data-modal]");
+        if (modalButton) {
+          openModal(modalButton.dataset.modal);
+        }
+
+        if (event.target.closest("[data-close-overlay]")) {
+          closeModal();
+        }
+
+        const toastTrigger = event.target.closest("[data-toast-trigger]");
+        if (toastTrigger) {
+          showToast(toastTrigger.dataset.toastTrigger);
+          closeModal();
+        }
+      });
+
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) closeModal();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeModal();
+      });
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (visible && !visible.target.classList.contains("hidden")) setActiveComponent(visible.target.id);
+        },
+        { rootMargin: "-12% 0px -68% 0px", threshold: [0.2, 0.45, 0.7] }
+      );
+
+      cards.forEach((card) => observer.observe(card));
+
+      function runSelfTest() {
+        const results = {};
+
+        results.initialVisibleSections = document.querySelectorAll(".component-section:not(.hidden)").length;
+        results.initialVisibleComponents = document.querySelectorAll(".component-card:not(.hidden)").length;
+
+        searchInput.value = "button";
+        applyFilters();
+        results.buttonMatchCount = document.querySelectorAll(".component-card:not(.hidden)").length;
+
+        searchInput.value = "";
+        applyFilters();
+        const businessChip = document.querySelector('.filter-chip[data-scope="business"]');
+        businessChip.click();
+        results.businessVisibleCount = document.querySelectorAll('.component-card[data-scope="business"]:not(.hidden)').length;
+        results.baseHiddenWhenBusiness = document.querySelectorAll('.component-card[data-scope="base"]:not(.hidden)').length === 0;
+        results.componentNavVisibleCount = document.querySelectorAll('#componentNav .component-link:not(.hidden)').length;
+        results.leftComponentNavExists = !!document.querySelector("#componentNav .component-link");
+
+        const allChip = document.querySelector('.filter-chip[data-scope="all"]');
+        allChip.click();
+        searchInput.value = "";
+        applyFilters();
+
+        showToast("success");
+        results.toastTitle = document.querySelector(".toast:last-child .toast-title")?.textContent || "";
+
+        openModal("danger");
+        results.modalTitle = document.querySelector("#overlayCard .dialog-title")?.textContent || "";
+        closeModal();
+
+        selfTestOutput.textContent = JSON.stringify(results, null, 2);
+      }
+
+      buildComponentNav();
+      applyFilters();
+      if (cards.length) setActiveComponent(cards[0].id);
+
+      if (window.location.search.includes("self-test=1")) {
+        window.setTimeout(runSelfTest, 120);
+      }
+    </script>
+  </body>
+</html>
