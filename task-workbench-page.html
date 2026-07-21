@@ -1,0 +1,3361 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>做单工作台原型</title>
+    <style>
+      :root {
+        --color-page: #fbfaf8;
+        --color-surface: #ffffff;
+        --color-surface-soft: #f3faf8;
+        --color-surface-strong: #edf7f3;
+        --color-primary: #0c9b72;
+        --color-primary-deep: #0a7d5d;
+        --color-primary-soft: #e8f8f3;
+        --color-text-title: #222222;
+        --color-text-main: #2f2f2f;
+        --color-text-secondary: #6f6a62;
+        --color-text-muted: #9f9a93;
+        --color-text-placeholder: #c7c1ba;
+        --color-border: #e5eae7;
+        --color-border-strong: #d6e5dc;
+        --color-warning: #e07f33;
+        --color-warning-soft: #fef0e5;
+        --color-danger: #e53e3e;
+        --color-danger-soft: #fff4f4;
+        --color-success-soft: #e0f4ef;
+        --color-disabled-soft: #f4f4f4;
+        --shadow-panel: 0 20px 48px rgba(28, 45, 37, 0.08);
+        --shadow-float: 0 18px 40px rgba(24, 43, 35, 0.12);
+        --radius-sm: 6px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-xl: 32px;
+        --control-height: 40px;
+        --assistant-width: 360px;
+        --assistant-collapsed-width: 78px;
+        --font-base: "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at left top, rgba(12, 155, 114, 0.11), transparent 20%),
+          radial-gradient(circle at right bottom, rgba(12, 155, 114, 0.08), transparent 18%),
+          var(--color-page);
+        color: var(--color-text-main);
+        font-family: var(--font-base);
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        background: none;
+        cursor: pointer;
+      }
+
+      input,
+      select,
+      textarea {
+        outline: none;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: 268px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding: 24px 22px 28px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9) 72%, rgba(232, 248, 243, 0.92));
+        border-right: 1px solid rgba(229, 234, 231, 0.76);
+        backdrop-filter: blur(14px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 700;
+        background: linear-gradient(150deg, #13a177, #0c9b72);
+        box-shadow: 0 12px 24px rgba(12, 155, 114, 0.24);
+      }
+
+      .brand-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .brand-subtitle {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .sidebar-section-title {
+        padding: 0 12px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .sidebar-nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 54px;
+        padding: 0 16px;
+        border-radius: 18px;
+        color: var(--color-text-secondary);
+        transition: transform 180ms ease, background-color 180ms ease, color 180ms ease;
+      }
+
+      .nav-item:hover,
+      .nav-item.active {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+        transform: translateX(2px);
+      }
+
+      .nav-item.disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+
+      .nav-icon {
+        width: 18px;
+        height: 18px;
+        border-radius: 6px;
+        background: currentColor;
+        opacity: 0.18;
+      }
+
+      .nav-text strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .nav-text span {
+        display: block;
+        margin-top: 3px;
+        font-size: 12px;
+      }
+
+      .sidebar-summary {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(232, 248, 243, 0.42), rgba(255, 255, 255, 0.96));
+        box-shadow: var(--shadow-panel);
+      }
+
+      .summary-kicker {
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .summary-value {
+        font-size: 32px;
+        line-height: 1;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .summary-copy {
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--color-text-secondary);
+      }
+
+      .profile-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: auto;
+        padding: 14px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: var(--shadow-panel);
+      }
+
+      .avatar {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 700;
+        background: var(--color-primary);
+      }
+
+      .profile-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .profile-role {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .workspace {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 30px 32px 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.08;
+        color: var(--color-text-title);
+      }
+
+      .page-subtitle {
+        margin: 12px 0 0;
+        max-width: 720px;
+        font-size: 14px;
+        line-height: 1.75;
+        color: var(--color-text-secondary);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .content {
+        display: grid;
+        gap: 18px;
+        padding: 0 32px 32px;
+      }
+
+      .surface {
+        border: 1px solid rgba(229, 234, 231, 0.72);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: var(--shadow-panel);
+      }
+
+      .hero {
+        padding: 22px;
+      }
+
+      .hero-top {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .hero-title {
+        margin: 0;
+        font-size: 18px;
+        color: var(--color-text-title);
+      }
+
+      .hero-caption {
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--color-text-secondary);
+      }
+
+      .hero-meta {
+        font-size: 13px;
+        color: var(--color-text-muted);
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .overview-card {
+        position: relative;
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+        border: 1px solid var(--color-border);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 250, 0.94));
+        text-align: left;
+        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+      }
+
+      .overview-card:hover,
+      .overview-card.active {
+        transform: translateY(-1px);
+        border-color: rgba(12, 155, 114, 0.34);
+        box-shadow: 0 18px 38px rgba(24, 43, 35, 0.08);
+      }
+
+      .overview-card::after {
+        content: "";
+        position: absolute;
+        inset: auto 18px 0 18px;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(12, 155, 114, 0.08), rgba(12, 155, 114, 0.38));
+      }
+
+      .overview-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 14px;
+        color: var(--color-text-secondary);
+      }
+
+      .overview-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 22px;
+        padding: 0 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .overview-number {
+        font-size: 34px;
+        line-height: 1;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .overview-desc {
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--color-text-muted);
+      }
+
+      .toolbar {
+        display: grid;
+        gap: 14px;
+        padding: 20px 22px;
+      }
+
+      .toolbar-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .field {
+        position: relative;
+        min-width: 0;
+      }
+
+      .control,
+      .search-input,
+      .textarea,
+      .input {
+        width: 100%;
+        min-height: var(--control-height);
+        padding: 0 14px;
+        border: 1px solid var(--color-border);
+        border-radius: 14px;
+        background: #fff;
+        color: var(--color-text-main);
+        transition: border-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      .control:focus,
+      .search-input:focus,
+      .textarea:focus,
+      .input:focus {
+        border-color: rgba(12, 155, 114, 0.56);
+        box-shadow: 0 0 0 4px rgba(12, 155, 114, 0.09);
+      }
+
+      .search-field {
+        position: relative;
+        width: 260px;
+      }
+
+      .search-field .search-input {
+        padding-left: 40px;
+      }
+
+      .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--color-text-placeholder);
+        border-radius: 50%;
+        transform: translateY(-50%);
+      }
+
+      .search-icon::after {
+        content: "";
+        position: absolute;
+        right: -5px;
+        bottom: -4px;
+        width: 6px;
+        height: 2px;
+        border-radius: 999px;
+        background: var(--color-text-placeholder);
+        transform: rotate(45deg);
+      }
+
+      .select-field {
+        width: 160px;
+      }
+
+      .toolbar-note {
+        font-size: 13px;
+        color: var(--color-text-muted);
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        white-space: nowrap;
+        transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button.primary {
+        color: #fff;
+        background: linear-gradient(135deg, #12a076, #0c9b72);
+      }
+
+      .button.secondary {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .button.ghost {
+        color: var(--color-text-secondary);
+        border-color: var(--color-border);
+        background: #fff;
+      }
+
+      .button.danger {
+        color: var(--color-danger);
+        background: var(--color-danger-soft);
+      }
+
+      .button.sm {
+        height: 34px;
+        padding: 0 12px;
+        border-radius: 12px;
+        font-size: 13px;
+      }
+
+      .button.block {
+        width: 100%;
+      }
+
+      .pill-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        background: var(--color-disabled-soft);
+      }
+
+      .status-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .status-tag.pending {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .status-tag.processing {
+        color: #0b7f97;
+        background: #e8f6fb;
+      }
+
+      .status-tag.exception {
+        color: var(--color-warning);
+        background: var(--color-warning-soft);
+      }
+
+      .status-tag.done {
+        color: #39735f;
+        background: var(--color-success-soft);
+      }
+
+      .status-tag.cancelled {
+        color: var(--color-text-secondary);
+        background: var(--color-disabled-soft);
+      }
+
+      .due-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .due-tag.overdue {
+        color: var(--color-danger);
+        background: var(--color-danger-soft);
+      }
+
+      .due-tag.today {
+        color: var(--color-warning);
+        background: var(--color-warning-soft);
+      }
+
+      .due-tag.future {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .due-tag.none {
+        color: var(--color-text-secondary);
+        background: var(--color-disabled-soft);
+      }
+
+      .list-panel {
+        padding: 14px;
+      }
+
+      .list-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 10px 10px 18px;
+      }
+
+      .list-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .list-count {
+        font-size: 13px;
+        color: var(--color-text-muted);
+      }
+
+      .table {
+        display: grid;
+        gap: 10px;
+      }
+
+      .table-header,
+      .table-row {
+        display: grid;
+        grid-template-columns: minmax(260px, 2.4fr) 0.8fr 0.9fr 1fr 1fr auto;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .history-header,
+      .history-row {
+        display: grid;
+        grid-template-columns: minmax(260px, 2.6fr) 0.85fr 1fr 1fr auto;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .table-header,
+      .history-header {
+        padding: 0 16px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .table-row,
+      .history-row {
+        padding: 16px;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 250, 0.94));
+        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      .table-row:hover,
+      .history-row:hover,
+      .table-row.active {
+        transform: translateY(-1px);
+        border-color: rgba(12, 155, 114, 0.28);
+        box-shadow: 0 12px 24px rgba(24, 43, 35, 0.06);
+      }
+
+      .ticket-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .ticket-code {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .ticket-subcopy {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+      }
+
+      .muted {
+        color: var(--color-text-muted);
+      }
+
+      .empty-state {
+        display: grid;
+        place-items: center;
+        gap: 14px;
+        min-height: 300px;
+        padding: 28px;
+        text-align: center;
+      }
+
+      .empty-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(232, 248, 243, 0.78), rgba(255, 255, 255, 0.96));
+        box-shadow: inset 0 0 0 1px rgba(12, 155, 114, 0.08);
+      }
+
+      .empty-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .empty-copy {
+        max-width: 420px;
+        font-size: 13px;
+        line-height: 1.8;
+        color: var(--color-text-secondary);
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) var(--assistant-width);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .detail-grid.assistant-collapsed {
+        grid-template-columns: minmax(0, 1fr) var(--assistant-collapsed-width);
+      }
+
+      .detail-main {
+        display: grid;
+        gap: 18px;
+        min-width: 0;
+      }
+
+      .detail-card {
+        padding: 22px;
+      }
+
+      .detail-head {
+        display: grid;
+        gap: 14px;
+      }
+
+      .detail-title-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .detail-title {
+        margin: 0;
+        font-size: 24px;
+        line-height: 1.2;
+        color: var(--color-text-title);
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .meta-item {
+        display: grid;
+        gap: 8px;
+        padding: 16px;
+        border-radius: 20px;
+        background: rgba(248, 252, 250, 0.88);
+        border: 1px solid rgba(229, 234, 231, 0.76);
+      }
+
+      .meta-label {
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .meta-value {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--color-text-main);
+      }
+
+      .section {
+        display: grid;
+        gap: 16px;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .section-title h3 {
+        margin: 0;
+        font-size: 17px;
+        color: var(--color-text-title);
+      }
+
+      .section-copy {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .field-block {
+        display: grid;
+        gap: 8px;
+      }
+
+      .field-block.full {
+        grid-column: 1 / -1;
+      }
+
+      .field-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--color-text-secondary);
+      }
+
+      .required {
+        color: var(--color-danger);
+      }
+
+      .field-value,
+      .readonly-value {
+        min-height: 40px;
+        padding: 12px 14px;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 16px;
+        background: rgba(248, 252, 250, 0.92);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .textarea {
+        min-height: 124px;
+        padding: 12px 14px;
+        resize: vertical;
+      }
+
+      .field-block.error .control,
+      .field-block.error .input,
+      .field-block.error .textarea,
+      .field-block.error .segment-group,
+      .field-block.error .upload-box {
+        border-color: rgba(229, 62, 62, 0.7);
+        box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.08);
+      }
+
+      .field-error {
+        font-size: 12px;
+        color: var(--color-danger);
+      }
+
+      .segment-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px;
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        background: #fff;
+      }
+
+      .segment {
+        flex: 1;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 12px;
+        color: var(--color-text-secondary);
+      }
+
+      .segment.active {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .option-grid {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+        min-height: 40px;
+        padding: 0 2px;
+      }
+
+      .option-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+
+      .dot {
+        width: 16px;
+        height: 16px;
+        border: 1px solid var(--color-border-strong);
+        border-radius: 50%;
+        background: #fff;
+      }
+
+      .dot.active {
+        border-color: var(--color-primary);
+        box-shadow: inset 0 0 0 4px var(--color-primary);
+      }
+
+      .check {
+        width: 16px;
+        height: 16px;
+        border: 1px solid var(--color-border-strong);
+        border-radius: 4px;
+        background: #fff;
+      }
+
+      .check.active {
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        box-shadow: inset 0 0 0 2px #fff;
+      }
+
+      .helper-text {
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .alert {
+        display: grid;
+        gap: 10px;
+        padding: 16px;
+        border-radius: 18px;
+        border: 1px solid transparent;
+      }
+
+      .alert.warning {
+        color: var(--color-warning);
+        border-color: rgba(224, 127, 51, 0.2);
+        background: var(--color-warning-soft);
+      }
+
+      .alert.error {
+        color: var(--color-danger);
+        border-color: rgba(229, 62, 62, 0.18);
+        background: var(--color-danger-soft);
+      }
+
+      .alert.success {
+        color: #287259;
+        border-color: rgba(40, 114, 89, 0.16);
+        background: var(--color-success-soft);
+      }
+
+      .attachment-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .attachment-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        background: rgba(248, 252, 250, 0.92);
+      }
+
+      .upload-box {
+        display: grid;
+        gap: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(12, 155, 114, 0.34);
+        border-radius: 18px;
+        background: rgba(243, 250, 248, 0.8);
+      }
+
+      .sticky-action {
+        position: sticky;
+        bottom: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 18px;
+        border-radius: 22px;
+        border: 1px solid rgba(229, 234, 231, 0.88);
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: var(--shadow-float);
+      }
+
+      .sticky-copy {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+      }
+
+      .sticky-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .assistant {
+        position: sticky;
+        top: 16px;
+        min-height: 360px;
+        overflow: hidden;
+      }
+
+      .assistant-panel {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        height: calc(100vh - 150px);
+        min-height: 600px;
+        padding: 18px;
+      }
+
+      .assistant.collapsed .assistant-panel {
+        display: none;
+      }
+
+      .assistant-collapsed-panel {
+        display: none;
+        gap: 12px;
+        padding: 16px 10px;
+      }
+
+      .assistant.collapsed .assistant-collapsed-panel {
+        display: grid;
+      }
+
+      .assistant-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .assistant-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .assistant-tabs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .assistant-tab {
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 12px;
+        color: var(--color-text-secondary);
+      }
+
+      .assistant-tab.active {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .assistant-body {
+        min-height: 0;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .assistant-body::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .assistant-body::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: rgba(214, 229, 220, 0.9);
+      }
+
+      .chat-list,
+      .timeline,
+      .demand-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .chat-bubble {
+        padding: 12px 14px;
+        border-radius: 18px;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .chat-bubble.user {
+        justify-self: end;
+        max-width: 88%;
+        color: #fff;
+        background: linear-gradient(135deg, #12a076, #0c9b72);
+      }
+
+      .chat-bubble.assistant {
+        max-width: 92%;
+        color: var(--color-text-main);
+        background: rgba(243, 250, 248, 0.98);
+      }
+
+      .ai-tip {
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--color-text-muted);
+      }
+
+      .ai-composer {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(229, 234, 231, 0.88);
+      }
+
+      .timeline-item,
+      .demand-item {
+        display: grid;
+        gap: 8px;
+        padding: 14px;
+        border: 1px solid rgba(229, 234, 231, 0.9);
+        border-radius: 18px;
+        background: rgba(248, 252, 250, 0.92);
+      }
+
+      .timeline-head,
+      .demand-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .timeline-title,
+      .demand-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--color-text-title);
+      }
+
+      .timeline-meta,
+      .demand-meta {
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .demand-item.current {
+        border-color: rgba(12, 155, 114, 0.26);
+        background: rgba(232, 248, 243, 0.58);
+      }
+
+      .mini-tab {
+        display: grid;
+        place-items: center;
+        gap: 8px;
+        min-height: 80px;
+        padding: 12px 0;
+        border-radius: 18px;
+        color: var(--color-text-secondary);
+        background: rgba(248, 252, 250, 0.96);
+        border: 1px solid rgba(229, 234, 231, 0.82);
+      }
+
+      .mini-tab.active {
+        color: var(--color-primary);
+        background: var(--color-primary-soft);
+      }
+
+      .mini-icon {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.96);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .success-card,
+      .error-card,
+      .link-shell {
+        display: grid;
+        gap: 16px;
+        padding: 24px;
+        border-radius: 24px;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 250, 0.95));
+      }
+
+      .success-card h3,
+      .error-card h3,
+      .link-shell h3 {
+        margin: 0;
+        font-size: 20px;
+        color: var(--color-text-title);
+      }
+
+      .link-frame {
+        display: grid;
+        gap: 14px;
+        min-height: 360px;
+        padding: 18px;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 22px;
+        background:
+          linear-gradient(180deg, rgba(243, 250, 248, 0.62), rgba(255, 255, 255, 0.96)),
+          #fff;
+      }
+
+      .link-browser-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid rgba(229, 234, 231, 0.92);
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      .browser-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(12, 155, 114, 0.28);
+      }
+
+      .browser-url {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: var(--color-text-secondary);
+      }
+
+      .link-page-preview {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+        min-height: 280px;
+      }
+
+      .preview-panel {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(229, 234, 231, 0.88);
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      .preview-block {
+        height: 14px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(12, 155, 114, 0.12), rgba(12, 155, 114, 0.28));
+      }
+
+      .preview-block.short {
+        width: 42%;
+      }
+
+      .preview-block.medium {
+        width: 68%;
+      }
+
+      .preview-block.long {
+        width: 100%;
+      }
+
+      .toast-stack {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        display: grid;
+        gap: 10px;
+        z-index: 50;
+      }
+
+      .toast {
+        min-width: 260px;
+        max-width: 360px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        color: #fff;
+        background: rgba(34, 34, 34, 0.92);
+        box-shadow: var(--shadow-float);
+      }
+
+      .toast strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .pulse {
+        animation: pulseField 900ms ease;
+      }
+
+      @keyframes pulseField {
+        0% {
+          transform: translateY(0);
+          box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.2);
+        }
+        35% {
+          transform: translateY(-1px);
+          box-shadow: 0 0 0 10px rgba(229, 62, 62, 0.08);
+        }
+        100% {
+          transform: translateY(0);
+          box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
+        }
+      }
+
+      @media (max-width: 1200px) {
+        .detail-grid,
+        .detail-grid.assistant-collapsed {
+          grid-template-columns: 1fr;
+        }
+
+        .assistant,
+        .assistant-panel {
+          position: static;
+          height: auto;
+          min-height: 0;
+        }
+
+        .assistant.collapsed .assistant-panel {
+          display: grid;
+        }
+
+        .assistant-collapsed-panel {
+          display: none !important;
+        }
+
+        .meta-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 980px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          gap: 16px;
+          padding-bottom: 20px;
+          border-right: 0;
+          border-bottom: 1px solid rgba(229, 234, 231, 0.76);
+        }
+
+        .sidebar-nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .page-header,
+        .content {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        .page-header {
+          padding-top: 22px;
+        }
+
+        .card-grid,
+        .field-grid,
+        .link-page-preview {
+          grid-template-columns: 1fr;
+        }
+
+        .table-header,
+        .history-header {
+          display: none;
+        }
+
+        .table-row,
+        .history-row {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        .meta-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .sidebar-nav {
+          grid-template-columns: 1fr;
+        }
+
+        .page-title {
+          font-size: 26px;
+        }
+
+        .toolbar-row,
+        .toolbar-group,
+        .sticky-action {
+          align-items: stretch;
+        }
+
+        .toolbar-group,
+        .sticky-actions,
+        .header-actions {
+          width: 100%;
+        }
+
+        .search-field,
+        .select-field {
+          width: 100%;
+        }
+
+        .meta-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .sticky-action {
+          position: static;
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">单</div>
+          <div>
+            <div class="brand-title">做单工作台</div>
+            <div class="brand-subtitle">SSC UI / 人工工单工作面</div>
+          </div>
+        </div>
+        <div>
+          <div class="sidebar-section-title">主链路</div>
+          <div class="sidebar-nav">
+            <button class="nav-item active" data-nav="todo">
+              <span class="nav-icon"></span>
+              <span class="nav-text">
+                <strong>我的待办</strong>
+                <span>按目标完成时间处理</span>
+              </span>
+            </button>
+            <button class="nav-item" data-nav="history">
+              <span class="nav-icon"></span>
+              <span class="nav-text">
+                <strong>历史记录</strong>
+                <span>查看已完成与已取消工单</span>
+              </span>
+            </button>
+            <div class="nav-item disabled">
+              <span class="nav-icon"></span>
+              <span class="nav-text">
+                <strong>运行管理</strong>
+                <span>后续承接看板与追踪</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="sidebar-summary">
+          <div class="summary-kicker">当前工作模式</div>
+          <div class="summary-value" id="sidebarOpenCount">0</div>
+          <div class="summary-copy">只展示 Owner 为当前用户且 Owner 类型为人的人工工单。已完成、已取消、系统类工单不进入一期首页。</div>
+        </div>
+        <div class="profile-card">
+          <div class="avatar">陈</div>
+          <div>
+            <div class="profile-name">陈雨安</div>
+            <div class="profile-role">人工处理人 / 当前登录用户</div>
+          </div>
+        </div>
+      </aside>
+      <main class="workspace">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">SSC UI WORKBENCH</p>
+            <h1 class="page-title" id="pageTitle"></h1>
+            <p class="page-subtitle" id="pageSubtitle"></p>
+          </div>
+          <div class="header-actions" id="headerActions"></div>
+        </header>
+        <section class="content" id="app"></section>
+      </main>
+    </div>
+    <div class="toast-stack" id="toastStack"></div>
+    <script>
+      const nowBase = new Date();
+
+      function dateByOffset(days, hours, minutes) {
+        const date = new Date(nowBase);
+        date.setDate(date.getDate() + days);
+        date.setHours(date.getHours() + hours);
+        date.setMinutes(date.getMinutes() + minutes);
+        date.setSeconds(0, 0);
+        return date.toISOString();
+      }
+
+      function dateAtOffset(days, hour, minute) {
+        const date = new Date(nowBase);
+        date.setDate(date.getDate() + days);
+        date.setHours(hour, minute, 0, 0);
+        return date.toISOString();
+      }
+
+      const tickets = [
+        {
+          id: "ticket-1",
+          demandName: "入职办理",
+          ticketName: "补充身份证与银行卡信息",
+          code: "WK-240701-001",
+          status: "待处理",
+          createdAt: dateByOffset(-2, -5, 0),
+          dueAt: dateByOffset(0, -4, 0),
+          pageType: "json",
+          summary: "待补齐身份证扫描件和银行卡开户信息，提交后进入复核。",
+          keywords: ["身份证", "银行卡"],
+          actions: [
+            { id: "save", label: "暂存草稿", kind: "ghost" },
+            { id: "submit", label: "提交处理", kind: "primary" }
+          ],
+          notice: {
+            type: "warning",
+            text: "当前工单已逾期，请优先处理并补充缺失材料原因。"
+          },
+          sections: [
+            {
+              title: "信息核对",
+              copy: "顶部字段由处理页 JSON 渲染数据驱动，保持通用承载形态。",
+              fields: [
+                { id: "employeeName", label: "员工姓名", type: "readonly", value: "陈雨安" },
+                { id: "employeeId", label: "员工编号", type: "readonly", value: "E2026071801" },
+                { id: "entryCity", label: "入职城市", type: "text", required: true, placeholder: "请输入入职城市", value: "上海" },
+                {
+                  id: "materialState",
+                  label: "材料状态",
+                  type: "segmented",
+                  required: true,
+                  options: ["已齐全", "缺少材料"],
+                  value: "缺少材料"
+                },
+                {
+                  id: "bankName",
+                  label: "银行卡开户行",
+                  type: "text",
+                  required: true,
+                  placeholder: "请输入开户行",
+                  value: ""
+                },
+                {
+                  id: "supplementReason",
+                  label: "补充说明",
+                  type: "textarea",
+                  full: true,
+                  required: true,
+                  placeholder: "说明当前缺失项、跟进情况和建议",
+                  value: ""
+                }
+              ]
+            },
+            {
+              title: "附件处理",
+              copy: "支持附件预览、上传、重新上传和删除。",
+              fields: [
+                {
+                  id: "offerFile",
+                  label: "Offer 附件",
+                  type: "attachment",
+                  mode: "readonly",
+                  files: ["offer-v3.pdf"]
+                },
+                {
+                  id: "idCardFile",
+                  label: "身份证扫描件",
+                  type: "attachment",
+                  mode: "upload",
+                  required: true,
+                  files: []
+                }
+              ]
+            }
+          ],
+          aiMessages: [
+            { role: "assistant", content: "我已为你整理本单重点：1. 身份证附件缺失；2. 需确认银行卡开户行；3. 当前已逾期，请先补全后提交。" }
+          ],
+          progress: [
+            {
+              type: "人工分配",
+              status: "待处理",
+              actor: "共享服务中心调度",
+              time: dateByOffset(-1, -8, 0),
+              content: "工单分配给当前处理人。"
+            },
+            {
+              type: "材料检查",
+              status: "异常",
+              actor: "入职专员",
+              time: dateByOffset(-1, -2, 0),
+              content: "发现身份证扫描件未上传。"
+            }
+          ],
+          demandProgress: [
+            {
+              title: "Offer 信息确认",
+              status: "已完成",
+              time: dateByOffset(-3, -2, 0),
+              note: "基础信息确认完成。"
+            },
+            {
+              title: "补充身份证与银行卡信息",
+              status: "处理中",
+              time: dateByOffset(-1, -2, 0),
+              note: "当前工单，需要补齐材料。",
+              current: true
+            },
+            {
+              title: "入职资料归档",
+              status: "待处理",
+              time: dateByOffset(1, 2, 0),
+              note: "等待本单完成后进入下一步。"
+            }
+          ]
+        },
+        {
+          id: "ticket-2",
+          demandName: "合同签署",
+          ticketName: "复核劳动合同主体",
+          code: "WK-240701-002",
+          status: "处理中",
+          createdAt: dateByOffset(-1, -4, 0),
+          dueAt: dateAtOffset(0, 18, 0),
+          pageType: "json",
+          summary: "核对签约主体与签署日期，确认后进入合同下发。",
+          actions: [
+            { id: "save", label: "暂存草稿", kind: "ghost" },
+            { id: "submit", label: "提交复核", kind: "primary" }
+          ],
+          sections: [
+            {
+              title: "合同信息",
+              copy: "支持只读字段、枚举、日期和意见填写。",
+              fields: [
+                { id: "companyName", label: "签约主体", type: "select", required: true, value: "", options: ["上海 SSC 服务有限公司", "上海 SSC 科技有限公司", "北京 SSC 服务有限公司"] },
+                { id: "employeeName", label: "员工姓名", type: "readonly", value: "林澈" },
+                { id: "entryDate", label: "入职日期", type: "date", required: true, value: "" },
+                {
+                  id: "contractType",
+                  label: "合同类型",
+                  type: "radio",
+                  required: true,
+                  options: ["固定期限", "无固定期限"],
+                  value: ""
+                },
+                {
+                  id: "reviewResult",
+                  label: "复核结果",
+                  type: "segmented",
+                  required: true,
+                  options: ["通过", "需补充"],
+                  value: "通过"
+                },
+                {
+                  id: "reviewNote",
+                  label: "复核意见",
+                  type: "textarea",
+                  full: true,
+                  required: true,
+                  placeholder: "填写复核结论和需要提醒的风险点",
+                  value: ""
+                }
+              ]
+            },
+            {
+              title: "附件确认",
+              copy: "合同正文支持预览下载。",
+              fields: [
+                {
+                  id: "contractFile",
+                  label: "合同正文",
+                  type: "attachment",
+                  mode: "readonly",
+                  files: ["labor-contract.pdf", "annex-benefit.pdf"]
+                }
+              ]
+            }
+          ],
+          aiMessages: [
+            { role: "assistant", content: "建议先确认签约主体是否与入职城市匹配，再复核入职日期。" }
+          ],
+          progress: [
+            {
+              type: "人工分配",
+              status: "处理中",
+              actor: "合同运营",
+              time: dateByOffset(-1, -6, 0),
+              content: "分配给当前处理人后开始复核。"
+            },
+            {
+              type: "处理",
+              status: "处理中",
+              actor: "陈雨安",
+              time: dateByOffset(-1, -1, 30),
+              content: "已打开处理页并开始填写。"
+            }
+          ],
+          demandProgress: [
+            {
+              title: "Offer 信息确认",
+              status: "已完成",
+              time: dateByOffset(-3, 0, 0),
+              note: "Offer 审核完成。"
+            },
+            {
+              title: "复核劳动合同主体",
+              status: "处理中",
+              time: dateByOffset(-1, -1, 0),
+              note: "当前工单，需要确认合同主体。",
+              current: true
+            },
+            {
+              title: "合同发送签署",
+              status: "待处理",
+              time: dateByOffset(1, 3, 0),
+              note: "等待本单通过后触发。"
+            }
+          ]
+        },
+        {
+          id: "ticket-3",
+          demandName: "服务开通",
+          ticketName: "确认云资源开通信息",
+          code: "WK-240701-003",
+          status: "待处理",
+          createdAt: dateByOffset(-1, -10, 0),
+          dueAt: dateByOffset(1, 6, 0),
+          pageType: "link",
+          linkUrl: "https://processing.example.com/workorder/WK-240701-003",
+          summary: "外部处理页承接具体操作，工作台只负责头部信息和辅助区。",
+          actions: [],
+          aiMessages: [
+            { role: "assistant", content: "这是链接接入页，工作台不会重复展示底部动作区。建议先确认云资源规格，再在接入页内完成提交。" }
+          ],
+          progress: [
+            {
+              type: "人工分配",
+              status: "待处理",
+              actor: "服务运营",
+              time: dateByOffset(-1, -5, 0),
+              content: "工单分配到当前处理人。"
+            }
+          ],
+          demandProgress: [
+            {
+              title: "确认云资源开通信息",
+              status: "待处理",
+              time: dateByOffset(-1, -5, 0),
+              note: "当前工单，需要进入外部处理页确认。",
+              current: true
+            },
+            {
+              title: "回传开通结果",
+              status: "待处理",
+              time: dateByOffset(1, 8, 0),
+              note: "外部处理完成后由接口自动回传。"
+            }
+          ]
+        },
+        {
+          id: "ticket-4",
+          demandName: "离职归档",
+          ticketName: "补充离职证明附件",
+          code: "WK-240701-004",
+          status: "异常",
+          createdAt: dateByOffset(-3, -6, 0),
+          dueAt: null,
+          pageType: "json",
+          summary: "缺少离职证明文件，需要人工催收并重新上传。",
+          actions: [
+            { id: "save", label: "暂存草稿", kind: "ghost" },
+            { id: "submit", label: "提交归档", kind: "primary" }
+          ],
+          notice: {
+            type: "error",
+            text: "上一轮回传校验失败：离职证明附件格式不符合规范，请重新上传。"
+          },
+          sections: [
+            {
+              title: "归档信息",
+              copy: "异常态工单仍通过同一页框架承接处理。",
+              fields: [
+                { id: "employeeName", label: "员工姓名", type: "readonly", value: "赵清河" },
+                { id: "leaveDate", label: "离职日期", type: "date", required: true, value: "" },
+                { id: "archiveResult", label: "归档结论", type: "segmented", required: true, options: ["已补齐", "待跟进"], value: "" },
+                { id: "followUpUsers", label: "跟进对象", type: "checkbox", required: true, options: ["员工本人", "用人经理", "HRBP"], value: [] },
+                {
+                  id: "archiveNote",
+                  label: "跟进说明",
+                  type: "textarea",
+                  full: true,
+                  required: true,
+                  placeholder: "说明催收动作、当前阻塞和下一步安排",
+                  value: ""
+                }
+              ]
+            },
+            {
+              title: "附件操作",
+              copy: "支持重新上传和删除。",
+              fields: [
+                {
+                  id: "leaveFile",
+                  label: "离职证明",
+                  type: "attachment",
+                  mode: "upload",
+                  required: true,
+                  files: ["leave-proof-v1.png"]
+                }
+              ]
+            }
+          ],
+          aiMessages: [
+            { role: "assistant", content: "我建议你先核对附件格式要求，再在跟进说明中记录已联系对象和预计回收时间。" }
+          ],
+          progress: [
+            {
+              type: "异常",
+              status: "异常",
+              actor: "归档服务",
+              time: dateByOffset(-2, -2, 0),
+              content: "系统校验附件格式失败，转人工处理。"
+            },
+            {
+              type: "人工分配",
+              status: "异常",
+              actor: "归档运营",
+              time: dateByOffset(-2, -1, 0),
+              content: "分配给当前处理人跟进。"
+            }
+          ],
+          demandProgress: [
+            {
+              title: "补充离职证明附件",
+              status: "异常",
+              time: dateByOffset(-2, -1, 0),
+              note: "当前工单，需要修复附件问题。",
+              current: true
+            },
+            {
+              title: "完成离职资料归档",
+              status: "待处理",
+              time: dateByOffset(2, 6, 0),
+              note: "等待本单恢复正常后继续。"
+            }
+          ]
+        },
+        {
+          id: "ticket-5",
+          demandName: "员工转正",
+          ticketName: "确认转正审批材料",
+          code: "WK-240701-005",
+          status: "待处理",
+          createdAt: dateByOffset(-5, -6, 0),
+          dueAt: dateByOffset(2, 5, 0),
+          pageType: "json",
+          failLoadOnce: true,
+          summary: "用于展示处理页加载失败与重试状态。",
+          actions: [
+            { id: "save", label: "暂存草稿", kind: "ghost" },
+            { id: "submit", label: "提交确认", kind: "primary" }
+          ],
+          sections: [
+            {
+              title: "审批材料",
+              copy: "重试成功后进入 JSON 渲染页。",
+              fields: [
+                { id: "employeeName", label: "员工姓名", type: "readonly", value: "许明洲" },
+                { id: "regularDate", label: "转正日期", type: "date", required: true, value: "" },
+                { id: "materialCheck", label: "材料检查结果", type: "segmented", required: true, options: ["通过", "待补充"], value: "" },
+                { id: "approvalOpinion", label: "审批意见", type: "textarea", full: true, required: true, placeholder: "填写核对结论和需要补充项", value: "" }
+              ]
+            }
+          ],
+          aiMessages: [
+            { role: "assistant", content: "处理页首屏加载失败时，辅助区仍然可用，你可以先查看工单进展和需求上下文。" }
+          ],
+          progress: [
+            {
+              type: "人工分配",
+              status: "待处理",
+              actor: "转正运营",
+              time: dateByOffset(-1, -7, 0),
+              content: "转正审批材料确认单已分配。"
+            }
+          ],
+          demandProgress: [
+            {
+              title: "确认转正审批材料",
+              status: "待处理",
+              time: dateByOffset(-1, -7, 0),
+              note: "当前工单，初次打开时模拟加载失败。",
+              current: true
+            }
+          ]
+        },
+        {
+          id: "ticket-6",
+          demandName: "薪资调整",
+          ticketName: "确认调薪生效日期",
+          code: "WK-240701-006",
+          status: "已完成",
+          createdAt: dateByOffset(-7, -5, 0),
+          processedAt: dateByOffset(-1, -3, 0),
+          dueAt: dateByOffset(-1, 1, 0),
+          pageType: "json",
+          summary: "已由当前用户处理完成，用于历史记录。",
+          sections: [
+            {
+              title: "处理回看",
+              fields: [
+                { id: "employeeName", label: "员工姓名", type: "readonly", value: "顾青禾" },
+                { id: "effectiveDate", label: "调薪生效日期", type: "readonly", value: "2026-07-01" },
+                { id: "reviewNote", label: "处理说明", type: "readonly", value: "已核对调薪生效日期，与薪资生效批次一致。" }
+              ]
+            }
+          ],
+          aiMessages: [
+            { role: "assistant", content: "历史工单只用于查看，不再展示底部处理动作。" }
+          ],
+          progress: [
+            {
+              type: "完成",
+              status: "已完成",
+              actor: "陈雨安",
+              time: dateByOffset(-1, -3, 0),
+              content: "确认调薪生效日期并提交完成。"
+            }
+          ],
+          demandProgress: [
+            {
+              title: "确认调薪生效日期",
+              status: "已完成",
+              time: dateByOffset(-1, -3, 0),
+              note: "当前历史工单。",
+              current: true
+            }
+          ]
+        },
+        {
+          id: "ticket-7",
+          demandName: "合同签署",
+          ticketName: "撤回错误版本合同",
+          code: "WK-240701-007",
+          status: "已取消",
+          createdAt: dateByOffset(-8, -3, 0),
+          processedAt: dateByOffset(-2, -2, 0),
+          dueAt: null,
+          pageType: "json",
+          summary: "已取消工单，用于历史记录取消状态展示。",
+          sections: [
+            {
+              title: "取消说明",
+              fields: [
+                { id: "cancelReason", label: "取消原因", type: "readonly", value: "需求方已重新创建正确版本，无需继续处理。" }
+              ]
+            }
+          ],
+          aiMessages: [
+            { role: "assistant", content: "取消态工单保留查看能力，但不再出现在我的待办。" }
+          ],
+          progress: [
+            {
+              type: "取消",
+              status: "已取消",
+              actor: "合同运营",
+              time: dateByOffset(-2, -2, 0),
+              content: "旧版本合同工单已取消。"
+            }
+          ],
+          demandProgress: [
+            {
+              title: "撤回错误版本合同",
+              status: "已取消",
+              time: dateByOffset(-2, -2, 0),
+              note: "当前历史工单。",
+              current: true
+            }
+          ]
+        }
+      ];
+
+      const state = {
+        view: "todo",
+        detailSource: "todo",
+        detailTicketId: null,
+        selectedTicketId: null,
+        assistantTab: "ai",
+        assistantCollapsed: false,
+        todoFilters: {
+          keyword: "",
+          status: "all",
+          due: "all",
+          demand: "all",
+          sort: "default"
+        },
+        historyFilters: {
+          keyword: "",
+          status: "all",
+          sort: "processed-desc"
+        },
+        draftById: {},
+        errorsById: {},
+        loadRetried: {},
+        successState: null,
+        toasts: []
+      };
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function isSameDay(a, b) {
+        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+      }
+
+      function formatDateTime(iso) {
+        if (!iso) {
+          return "-";
+        }
+        const date = new Date(iso);
+        const now = new Date();
+        const yearPart = date.getFullYear() === now.getFullYear() ? "" : `${date.getFullYear()}-`;
+        const month = `${date.getMonth() + 1}`.padStart(2, "0");
+        const day = `${date.getDate()}`.padStart(2, "0");
+        const hour = `${date.getHours()}`.padStart(2, "0");
+        const minute = `${date.getMinutes()}`.padStart(2, "0");
+        return `${yearPart}${month}-${day} ${hour}:${minute}`;
+      }
+
+      function dueState(ticket) {
+        if (!ticket.dueAt) {
+          return "none";
+        }
+        const due = new Date(ticket.dueAt);
+        const now = new Date();
+        if (now > due) {
+          return "overdue";
+        }
+        if (isSameDay(now, due)) {
+          return "today";
+        }
+        return "future";
+      }
+
+      function dueLabel(ticket) {
+        const mapping = {
+          overdue: "已逾期",
+          today: "今日到期",
+          future: "未来到期",
+          none: "无目标时间"
+        };
+        return mapping[dueState(ticket)];
+      }
+
+      function statusClass(status) {
+        const mapping = {
+          待处理: "pending",
+          处理中: "processing",
+          异常: "exception",
+          已完成: "done",
+          已取消: "cancelled"
+        };
+        return mapping[status] || "pending";
+      }
+
+      function dueClass(ticket) {
+        return dueState(ticket);
+      }
+
+      function getTicket(id) {
+        return tickets.find((ticket) => ticket.id === id);
+      }
+
+      function getTodoTickets() {
+        return tickets.filter((ticket) => ["待处理", "处理中", "异常"].includes(ticket.status));
+      }
+
+      function getHistoryTickets() {
+        return tickets.filter((ticket) => ["已完成", "已取消"].includes(ticket.status));
+      }
+
+      function defaultTodoSort(list) {
+        const rank = { overdue: 0, today: 1, future: 2, none: 3 };
+        return [...list].sort((a, b) => {
+          const stateGap = rank[dueState(a)] - rank[dueState(b)];
+          if (stateGap !== 0) {
+            return stateGap;
+          }
+          if (a.dueAt && b.dueAt) {
+            return new Date(a.dueAt) - new Date(b.dueAt);
+          }
+          if (a.dueAt) {
+            return -1;
+          }
+          if (b.dueAt) {
+            return 1;
+          }
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+      }
+
+      function sortTodo(list, sort) {
+        if (sort === "default") {
+          return defaultTodoSort(list);
+        }
+        return [...list].sort((a, b) => {
+          const dateA = a.dueAt ? new Date(a.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
+          const dateB = b.dueAt ? new Date(b.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
+          if (sort === "due-asc") {
+            return dateA - dateB;
+          }
+          if (sort === "due-desc") {
+            return dateB - dateA;
+          }
+          if (sort === "created-asc") {
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          }
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+      }
+
+      function sortHistory(list, sort) {
+        return [...list].sort((a, b) => {
+          if (sort === "processed-asc") {
+            return new Date(a.processedAt || a.createdAt) - new Date(b.processedAt || b.createdAt);
+          }
+          if (sort === "created-asc") {
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          }
+          if (sort === "created-desc") {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          }
+          return new Date(b.processedAt || b.createdAt) - new Date(a.processedAt || a.createdAt);
+        });
+      }
+
+      function filterTodoTickets() {
+        const filters = state.todoFilters;
+        let list = getTodoTickets();
+        if (filters.keyword) {
+          const keyword = filters.keyword.trim().toLowerCase();
+          list = list.filter((ticket) => {
+            const text = `${ticket.ticketName} ${ticket.code}`.toLowerCase();
+            return text.includes(keyword);
+          });
+        }
+        if (filters.status !== "all") {
+          list = list.filter((ticket) => ticket.status === filters.status);
+        }
+        if (filters.due !== "all") {
+          list = list.filter((ticket) => dueState(ticket) === filters.due);
+        }
+        if (filters.demand !== "all") {
+          list = list.filter((ticket) => ticket.demandName === filters.demand);
+        }
+        return sortTodo(list, filters.sort);
+      }
+
+      function filterHistoryTickets() {
+        const filters = state.historyFilters;
+        let list = getHistoryTickets();
+        if (filters.keyword) {
+          const keyword = filters.keyword.trim().toLowerCase();
+          list = list.filter((ticket) => {
+            const text = `${ticket.ticketName} ${ticket.code}`.toLowerCase();
+            return text.includes(keyword);
+          });
+        }
+        if (filters.status !== "all") {
+          list = list.filter((ticket) => ticket.status === filters.status);
+        }
+        return sortHistory(list, filters.sort);
+      }
+
+      function getDemandOptions() {
+        const names = [...new Set(getTodoTickets().map((ticket) => ticket.demandName))];
+        return names.sort((a, b) => a.localeCompare(b, "zh-CN"));
+      }
+
+      function getOverviewStats() {
+        const todos = getTodoTickets();
+        return {
+          all: todos.length,
+          today: todos.filter((ticket) => dueState(ticket) === "today").length,
+          overdue: todos.filter((ticket) => dueState(ticket) === "overdue").length
+        };
+      }
+
+      function cloneDefault(field) {
+        if (field.type === "checkbox") {
+          return Array.isArray(field.value) ? [...field.value] : [];
+        }
+        if (field.type === "attachment") {
+          return Array.isArray(field.files) ? [...field.files] : [];
+        }
+        return field.value ?? "";
+      }
+
+      function ensureDraft(ticket) {
+        if (!state.draftById[ticket.id]) {
+          const draft = {};
+          (ticket.sections || []).forEach((section) => {
+            (section.fields || []).forEach((field) => {
+              draft[field.id] = cloneDefault(field);
+            });
+          });
+          state.draftById[ticket.id] = draft;
+        }
+        return state.draftById[ticket.id];
+      }
+
+      function clearErrors(ticketId) {
+        delete state.errorsById[ticketId];
+      }
+
+      function renderButton(button, extra) {
+        return `<button class="button ${button.kind || "ghost"} ${extra || ""}" data-action="${button.id}" data-ticket-id="${button.ticketId || ""}">${escapeHtml(button.label)}</button>`;
+      }
+
+      function renderTodoView() {
+        const list = filterTodoTickets();
+        const stats = getOverviewStats();
+        const dueFilter = state.todoFilters.due;
+        const demandOptions = getDemandOptions();
+        const hasFilters =
+          state.todoFilters.keyword ||
+          state.todoFilters.status !== "all" ||
+          state.todoFilters.due !== "all" ||
+          state.todoFilters.demand !== "all" ||
+          state.todoFilters.sort !== "default";
+        return `
+          <section class="surface hero">
+            <div class="hero-top">
+              <div>
+                <h2 class="hero-title">我的待办概览</h2>
+                <div class="hero-caption">默认按已逾期、今日到期、未来到期、无目标时间组织，帮助处理人先看风险单。</div>
+              </div>
+              <div class="hero-meta">当前只承接已确定到人的人工工单</div>
+            </div>
+            <div class="card-grid">
+              <button class="overview-card ${dueFilter === "all" ? "active" : ""}" data-action="quick-filter" data-due="all">
+                <div class="overview-title">
+                  <span>我的待办</span>
+                  <span class="overview-badge">全部</span>
+                </div>
+                <div class="overview-number">${stats.all}</div>
+                <div class="overview-desc">展示当前用户待处理范围内的全部人工工单。</div>
+              </button>
+              <button class="overview-card ${dueFilter === "today" ? "active" : ""}" data-action="quick-filter" data-due="today">
+                <div class="overview-title">
+                  <span>今日到期</span>
+                  <span class="overview-badge">今日</span>
+                </div>
+                <div class="overview-number">${stats.today}</div>
+                <div class="overview-desc">目标完成日期为今天且当前时间未晚于目标完成时间。</div>
+              </button>
+              <button class="overview-card ${dueFilter === "overdue" ? "active" : ""}" data-action="quick-filter" data-due="overdue">
+                <div class="overview-title">
+                  <span>已逾期</span>
+                  <span class="overview-badge">优先</span>
+                </div>
+                <div class="overview-number">${stats.overdue}</div>
+                <div class="overview-desc">当前时间晚于目标完成时间的未完成工单优先暴露。</div>
+              </button>
+            </div>
+          </section>
+          <section class="surface toolbar">
+            <div class="toolbar-row">
+              <div class="toolbar-group">
+                <label class="field search-field">
+                  <span class="search-icon"></span>
+                  <input class="search-input" id="todoSearchInput" type="text" placeholder="搜索工单名称或工单编号" value="${escapeHtml(state.todoFilters.keyword)}" />
+                </label>
+                <button class="button ghost" data-action="apply-search" data-target="todo">搜索</button>
+                <label class="field select-field">
+                  <select class="control" id="todoStatusSelect">
+                    <option value="all"${state.todoFilters.status === "all" ? " selected" : ""}>全部状态</option>
+                    <option value="待处理"${state.todoFilters.status === "待处理" ? " selected" : ""}>待处理</option>
+                    <option value="处理中"${state.todoFilters.status === "处理中" ? " selected" : ""}>处理中</option>
+                    <option value="异常"${state.todoFilters.status === "异常" ? " selected" : ""}>异常</option>
+                  </select>
+                </label>
+                <label class="field select-field">
+                  <select class="control" id="todoDueSelect">
+                    <option value="all"${state.todoFilters.due === "all" ? " selected" : ""}>全部到期</option>
+                    <option value="overdue"${state.todoFilters.due === "overdue" ? " selected" : ""}>已逾期</option>
+                    <option value="today"${state.todoFilters.due === "today" ? " selected" : ""}>今日到期</option>
+                    <option value="future"${state.todoFilters.due === "future" ? " selected" : ""}>未来到期</option>
+                    <option value="none"${state.todoFilters.due === "none" ? " selected" : ""}>无目标时间</option>
+                  </select>
+                </label>
+                <label class="field select-field">
+                  <select class="control" id="todoDemandSelect">
+                    <option value="all"${state.todoFilters.demand === "all" ? " selected" : ""}>全部需求</option>
+                    ${demandOptions.map((name) => `<option value="${escapeHtml(name)}"${state.todoFilters.demand === name ? " selected" : ""}>${escapeHtml(name)}</option>`).join("")}
+                  </select>
+                </label>
+                <label class="field select-field">
+                  <select class="control" id="todoSortSelect">
+                    <option value="default"${state.todoFilters.sort === "default" ? " selected" : ""}>默认排序</option>
+                    <option value="due-asc"${state.todoFilters.sort === "due-asc" ? " selected" : ""}>目标完成时间正序</option>
+                    <option value="due-desc"${state.todoFilters.sort === "due-desc" ? " selected" : ""}>目标完成时间倒序</option>
+                    <option value="created-asc"${state.todoFilters.sort === "created-asc" ? " selected" : ""}>创建时间正序</option>
+                    <option value="created-desc"${state.todoFilters.sort === "created-desc" ? " selected" : ""}>创建时间倒序</option>
+                  </select>
+                </label>
+              </div>
+              <div class="toolbar-group">
+                ${hasFilters ? '<button class="button ghost" data-action="clear-filters" data-target="todo">清空条件</button>' : ""}
+                <span class="toolbar-note">概览卡快捷筛选会与搜索、状态、需求条件聚合生效。</span>
+              </div>
+            </div>
+          </section>
+          <section class="surface list-panel">
+            <div class="list-head">
+              <div>
+                <div class="list-title">待办列表</div>
+                <div class="list-count">筛选后共 ${list.length} 条工单</div>
+              </div>
+              <div class="pill-row">
+                <span class="pill">搜索范围：工单名称 / 编号</span>
+                <span class="pill">处理页形态：JSON / 链接接入</span>
+              </div>
+            </div>
+            ${
+              list.length
+                ? `
+                  <div class="table">
+                    <div class="table-header">
+                      <div>需求名称 · 工单名称</div>
+                      <div>工单状态</div>
+                      <div>到期标识</div>
+                      <div>目标完成时间</div>
+                      <div>创建时间</div>
+                      <div>操作</div>
+                    </div>
+                    ${list.map(renderTodoRow).join("")}
+                  </div>
+                `
+                : `
+                  <div class="empty-state">
+                    <div class="empty-icon"></div>
+                    <div class="empty-title">未找到相关工单</div>
+                    <div class="empty-copy">当前搜索词和筛选条件已保留。你可以修改关键词、状态、到期或需求条件后重新查询，恢复条件后列表会自动重新展示。</div>
+                    <button class="button secondary" data-action="clear-filters" data-target="todo">恢复默认列表</button>
+                  </div>
+                `
+            }
+          </section>
+        `;
+      }
+
+      function renderTodoRow(ticket) {
+        return `
+          <button class="table-row ${state.selectedTicketId === ticket.id ? "active" : ""}" data-action="open-ticket" data-ticket-id="${ticket.id}" data-source="todo">
+            <div>
+              <div class="ticket-title">${escapeHtml(ticket.demandName)} · ${escapeHtml(ticket.ticketName)}</div>
+              <div class="ticket-code">${escapeHtml(ticket.code)}</div>
+            </div>
+            <div><span class="status-tag ${statusClass(ticket.status)}">${escapeHtml(ticket.status)}</span></div>
+            <div><span class="due-tag ${dueClass(ticket)}">${escapeHtml(dueLabel(ticket))}</span></div>
+            <div class="ticket-subcopy">${escapeHtml(formatDateTime(ticket.dueAt))}</div>
+            <div class="ticket-subcopy">${escapeHtml(formatDateTime(ticket.createdAt))}</div>
+            <div><span class="button primary sm">处理</span></div>
+          </button>
+        `;
+      }
+
+      function renderHistoryView() {
+        const list = filterHistoryTickets();
+        const hasFilters =
+          state.historyFilters.keyword ||
+          state.historyFilters.status !== "all" ||
+          state.historyFilters.sort !== "processed-desc";
+        return `
+          <section class="surface toolbar">
+            <div class="toolbar-row">
+              <div class="toolbar-group">
+                <label class="field search-field">
+                  <span class="search-icon"></span>
+                  <input class="search-input" id="historySearchInput" type="text" placeholder="搜索历史工单名称或编号" value="${escapeHtml(state.historyFilters.keyword)}" />
+                </label>
+                <button class="button ghost" data-action="apply-search" data-target="history">搜索</button>
+                <label class="field select-field">
+                  <select class="control" id="historyStatusSelect">
+                    <option value="all"${state.historyFilters.status === "all" ? " selected" : ""}>全部状态</option>
+                    <option value="已完成"${state.historyFilters.status === "已完成" ? " selected" : ""}>已完成</option>
+                    <option value="已取消"${state.historyFilters.status === "已取消" ? " selected" : ""}>已取消</option>
+                  </select>
+                </label>
+                <label class="field select-field">
+                  <select class="control" id="historySortSelect">
+                    <option value="processed-desc"${state.historyFilters.sort === "processed-desc" ? " selected" : ""}>处理时间倒序</option>
+                    <option value="processed-asc"${state.historyFilters.sort === "processed-asc" ? " selected" : ""}>处理时间正序</option>
+                    <option value="created-desc"${state.historyFilters.sort === "created-desc" ? " selected" : ""}>创建时间倒序</option>
+                    <option value="created-asc"${state.historyFilters.sort === "created-asc" ? " selected" : ""}>创建时间正序</option>
+                  </select>
+                </label>
+              </div>
+              <div class="toolbar-group">
+                ${hasFilters ? '<button class="button ghost" data-action="clear-filters" data-target="history">清空条件</button>' : ""}
+                <span class="toolbar-note">历史记录不影响我的待办数量与首页排序。</span>
+              </div>
+            </div>
+          </section>
+          <section class="surface list-panel">
+            <div class="list-head">
+              <div>
+                <div class="list-title">历史工单</div>
+                <div class="list-count">共 ${list.length} 条，可查看已完成和已取消工单</div>
+              </div>
+              <div class="pill-row">
+                <span class="pill">默认按处理时间倒序</span>
+              </div>
+            </div>
+            ${
+              list.length
+                ? `
+                  <div class="table">
+                    <div class="history-header">
+                      <div>需求名称 · 工单名称</div>
+                      <div>状态</div>
+                      <div>处理时间</div>
+                      <div>创建时间</div>
+                      <div>操作</div>
+                    </div>
+                    ${list.map(renderHistoryRow).join("")}
+                  </div>
+                `
+                : `
+                  <div class="empty-state">
+                    <div class="empty-icon"></div>
+                    <div class="empty-title">未找到相关历史工单</div>
+                    <div class="empty-copy">当前条件仍然保留。你可以修改搜索词或筛选条件继续查询。</div>
+                    <button class="button secondary" data-action="clear-filters" data-target="history">恢复默认条件</button>
+                  </div>
+                `
+            }
+          </section>
+        `;
+      }
+
+      function renderHistoryRow(ticket) {
+        return `
+          <button class="history-row ${state.selectedTicketId === ticket.id ? "active" : ""}" data-action="open-ticket" data-ticket-id="${ticket.id}" data-source="history">
+            <div>
+              <div class="ticket-title">${escapeHtml(ticket.demandName)} · ${escapeHtml(ticket.ticketName)}</div>
+              <div class="ticket-code">${escapeHtml(ticket.code)}</div>
+            </div>
+            <div><span class="status-tag ${statusClass(ticket.status)}">${escapeHtml(ticket.status)}</span></div>
+            <div class="ticket-subcopy">${escapeHtml(formatDateTime(ticket.processedAt))}</div>
+            <div class="ticket-subcopy">${escapeHtml(formatDateTime(ticket.createdAt))}</div>
+            <div><span class="button ghost sm">查看</span></div>
+          </button>
+        `;
+      }
+
+      function renderDetailView(ticket) {
+        const readOnly = state.detailSource === "history" || ["已完成", "已取消"].includes(ticket.status);
+        const loadFail = ticket.failLoadOnce && !state.loadRetried[ticket.id] && state.detailSource !== "history";
+        return `
+          <section class="surface detail-card detail-head">
+            <div class="detail-title-row">
+              <div>
+                <div class="pill-row">
+                  <span class="pill">所属需求：${escapeHtml(ticket.demandName)}</span>
+                  <span class="pill">${ticket.pageType === "json" ? "JSON 处理页" : "链接处理页"}</span>
+                </div>
+                <h2 class="detail-title">${escapeHtml(ticket.ticketName)}</h2>
+                <div class="section-copy">${escapeHtml(ticket.summary || "")}</div>
+              </div>
+              <div class="pill-row">
+                <span class="status-tag ${statusClass(ticket.status)}">${escapeHtml(ticket.status)}</span>
+                <span class="due-tag ${dueClass(ticket)}">${escapeHtml(dueLabel(ticket))}</span>
+              </div>
+            </div>
+            <div class="meta-grid">
+              <div class="meta-item">
+                <div class="meta-label">工单编号</div>
+                <div class="meta-value">${escapeHtml(ticket.code)}</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">目标完成时间</div>
+                <div class="meta-value">${escapeHtml(formatDateTime(ticket.dueAt))}</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">创建时间</div>
+                <div class="meta-value">${escapeHtml(formatDateTime(ticket.createdAt))}</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">处理页类型</div>
+                <div class="meta-value">${ticket.pageType === "json" ? "JSON 渲染处理页" : "链接接入处理页"}</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">当前来源</div>
+                <div class="meta-value">${state.detailSource === "history" ? "历史记录" : "我的待办"}</div>
+              </div>
+            </div>
+          </section>
+          <section class="detail-grid ${state.assistantCollapsed ? "assistant-collapsed" : ""}">
+            <div class="detail-main">
+              ${renderDetailContent(ticket, readOnly, loadFail)}
+              ${renderStickyAction(ticket, readOnly, loadFail)}
+            </div>
+            ${renderAssistant(ticket)}
+          </section>
+        `;
+      }
+
+      function renderDetailContent(ticket, readOnly, loadFail) {
+        if (state.successState && state.successState.ticketId === ticket.id) {
+          const nextButton = state.successState.nextTicketId
+            ? '<button class="button primary" data-action="go-next-ticket">下一单</button>'
+            : '<button class="button primary" data-action="back-to-todo">返回我的待办</button>';
+          return `
+            <section class="surface detail-card">
+              <div class="success-card">
+                <div class="pill-row"><span class="pill">提交成功</span></div>
+                <h3>处理结果已提交</h3>
+                <div class="section-copy">系统已保存处理记录和状态记录。${state.successState.nextTicketId ? "你可以继续处理下一张待办。" : "当前排序下没有下一单，将返回我的待办。"} </div>
+                <div class="toolbar-group">
+                  ${nextButton}
+                  <button class="button ghost" data-action="back-to-todo">返回我的待办</button>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+        if (loadFail) {
+          return `
+            <section class="surface detail-card">
+              <div class="error-card">
+                <div class="pill-row"><span class="pill">处理页加载失败</span></div>
+                <h3>当前处理页暂时无法加载</h3>
+                <div class="section-copy">失败原因：处理页渲染数据响应超时。当前不允许提交处理结果，但右侧辅助区仍可继续查看 AI 提示、工单进展和需求进展。</div>
+                <div class="toolbar-group">
+                  <button class="button primary" data-action="retry-load" data-ticket-id="${ticket.id}">重试加载</button>
+                  <button class="button ghost" data-action="back-detail-source">返回${state.detailSource === "history" ? "历史记录" : "我的待办"}</button>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+        if (ticket.pageType === "link") {
+          return `
+            <section class="surface detail-card">
+              <div class="link-shell">
+                <div class="pill-row">
+                  <span class="pill">链接接入处理页</span>
+                  <span class="pill">工作台不展示底部动作区</span>
+                </div>
+                <h3>外部处理页容器</h3>
+                <div class="section-copy">链接页内部操作由接入页承接。工作台只保留头部信息、返回入口和右侧辅助区，避免出现两套按钮体系。</div>
+                <div class="link-frame">
+                  <div class="link-browser-bar">
+                    <span class="browser-dot"></span>
+                    <span class="browser-dot"></span>
+                    <span class="browser-dot"></span>
+                    <span class="browser-url">${escapeHtml(ticket.linkUrl || "")}</span>
+                  </div>
+                  <div class="link-page-preview">
+                    <div class="preview-panel">
+                      <div class="preview-block short"></div>
+                      <div class="preview-block long"></div>
+                      <div class="preview-block medium"></div>
+                      <div class="preview-block long"></div>
+                      <div class="preview-block long"></div>
+                      <div class="preview-block short"></div>
+                    </div>
+                    <div class="preview-panel">
+                      <div class="preview-block medium"></div>
+                      <div class="preview-block long"></div>
+                      <div class="preview-block long"></div>
+                      <div class="preview-block short"></div>
+                      <button class="button primary block">由接入页内部提交</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+        return `
+          <section class="surface detail-card">
+            ${renderJsonPage(ticket, readOnly)}
+          </section>
+        `;
+      }
+
+      function renderJsonPage(ticket, readOnly) {
+        const draft = ensureDraft(ticket);
+        const errors = state.errorsById[ticket.id] || {};
+        const errorKeys = Object.keys(errors);
+        return `
+          <div class="section">
+            ${ticket.notice ? `<div class="alert ${ticket.notice.type}">${escapeHtml(ticket.notice.text)}</div>` : ""}
+            ${
+              errorKeys.length
+                ? `
+                  <div class="alert error">
+                    <div>校验失败，当前还有 ${errorKeys.length} 个字段需要处理后才能提交。</div>
+                    <div class="pill-row">
+                      ${errorKeys.map((fieldId) => `<button class="button danger sm" data-action="locate-field" data-field-id="${fieldId}">${escapeHtml(errors[fieldId])}</button>`).join("")}
+                    </div>
+                  </div>
+                `
+                : ""
+            }
+            ${(ticket.sections || []).map((section) => renderSection(ticket, section, draft, errors, readOnly)).join("")}
+          </div>
+        `;
+      }
+
+      function renderSection(ticket, section, draft, errors, readOnly) {
+        return `
+          <section class="section">
+            <div class="section-title">
+              <h3>${escapeHtml(section.title)}</h3>
+              ${section.copy ? `<div class="section-copy">${escapeHtml(section.copy)}</div>` : ""}
+            </div>
+            <div class="field-grid">
+              ${(section.fields || []).map((field) => renderField(ticket, field, draft[field.id], errors[field.id], readOnly)).join("")}
+            </div>
+          </section>
+        `;
+      }
+
+      function renderField(ticket, field, value, error, readOnly) {
+        const fullClass = field.full ? " full" : "";
+        const errorClass = error ? " error" : "";
+        const requiredMark = field.required ? '<span class="required">*</span>' : "";
+        return `
+          <div class="field-block${fullClass}${errorClass}" data-field-block="${field.id}">
+            <label class="field-label">${requiredMark}${escapeHtml(field.label)}</label>
+            ${renderFieldControl(ticket, field, value, readOnly)}
+            ${field.helperText ? `<div class="helper-text">${escapeHtml(field.helperText)}</div>` : ""}
+            ${error ? `<div class="field-error">${escapeHtml(error)}</div>` : ""}
+          </div>
+        `;
+      }
+
+      function renderFieldControl(ticket, field, value, readOnly) {
+        if (field.type === "readonly") {
+          return `<div class="readonly-value">${escapeHtml(value || "-")}</div>`;
+        }
+        if (readOnly) {
+          if (field.type === "attachment") {
+            return renderAttachmentField(ticket, field, value, true);
+          }
+          return `<div class="field-value">${escapeHtml(formatReadonlyValue(field, value))}</div>`;
+        }
+        if (field.type === "text" || field.type === "number" || field.type === "date") {
+          const inputType = field.type === "date" ? "date" : field.type === "number" ? "number" : "text";
+          return `<input class="input" type="${inputType}" value="${escapeHtml(value || "")}" placeholder="${escapeHtml(field.placeholder || "")}" data-ticket-id="${ticket.id}" data-field-id="${field.id}" />`;
+        }
+        if (field.type === "textarea") {
+          return `<textarea class="textarea" placeholder="${escapeHtml(field.placeholder || "")}" data-ticket-id="${ticket.id}" data-field-id="${field.id}">${escapeHtml(value || "")}</textarea>`;
+        }
+        if (field.type === "select") {
+          return `
+            <select class="control" data-ticket-id="${ticket.id}" data-field-id="${field.id}">
+              <option value="">请选择</option>
+              ${(field.options || []).map((option) => `<option value="${escapeHtml(option)}"${value === option ? " selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+            </select>
+          `;
+        }
+        if (field.type === "radio") {
+          return `
+            <div class="option-grid">
+              ${(field.options || []).map((option) => `
+                <button class="option-item" data-action="pick-radio" data-ticket-id="${ticket.id}" data-field-id="${field.id}" data-value="${escapeHtml(option)}">
+                  <span class="dot ${value === option ? "active" : ""}"></span>
+                  <span>${escapeHtml(option)}</span>
+                </button>
+              `).join("")}
+            </div>
+          `;
+        }
+        if (field.type === "checkbox") {
+          const values = Array.isArray(value) ? value : [];
+          return `
+            <div class="option-grid">
+              ${(field.options || []).map((option) => `
+                <button class="option-item" data-action="toggle-checkbox" data-ticket-id="${ticket.id}" data-field-id="${field.id}" data-value="${escapeHtml(option)}">
+                  <span class="check ${values.includes(option) ? "active" : ""}"></span>
+                  <span>${escapeHtml(option)}</span>
+                </button>
+              `).join("")}
+            </div>
+          `;
+        }
+        if (field.type === "segmented") {
+          return `
+            <div class="segment-group">
+              ${(field.options || []).map((option) => `
+                <button class="segment ${value === option ? "active" : ""}" data-action="pick-segment" data-ticket-id="${ticket.id}" data-field-id="${field.id}" data-value="${escapeHtml(option)}">${escapeHtml(option)}</button>
+              `).join("")}
+            </div>
+          `;
+        }
+        if (field.type === "attachment") {
+          return renderAttachmentField(ticket, field, value, false);
+        }
+        return `<div class="readonly-value">暂未定义字段类型</div>`;
+      }
+
+      function renderAttachmentField(ticket, field, value, readOnly) {
+        const files = Array.isArray(value) ? value : [];
+        return `
+          <div class="attachment-list">
+            ${
+              files.length
+                ? files.map((file, index) => `
+                  <div class="attachment-item">
+                    <div>${escapeHtml(file)}</div>
+                    <div class="toolbar-group">
+                      <button class="button ghost sm" data-action="download-file" data-file="${escapeHtml(file)}">预览</button>
+                      ${
+                        readOnly || field.mode === "readonly"
+                          ? '<button class="button ghost sm" data-action="download-file">下载</button>'
+                          : `
+                            <button class="button secondary sm" data-action="reupload-file" data-ticket-id="${ticket.id}" data-field-id="${field.id}" data-index="${index}">重新上传</button>
+                            <button class="button danger sm" data-action="remove-file" data-ticket-id="${ticket.id}" data-field-id="${field.id}" data-index="${index}">删除</button>
+                          `
+                      }
+                    </div>
+                  </div>
+                `).join("")
+                : ""
+            }
+            ${
+              !readOnly && field.mode !== "readonly"
+                ? `
+                  <div class="upload-box">
+                    <div>支持附件上传、重新上传和删除。本原型使用模拟文件名替代真实上传逻辑。</div>
+                    <button class="button secondary" data-action="upload-file" data-ticket-id="${ticket.id}" data-field-id="${field.id}">${files.length ? "继续上传" : "上传附件"}</button>
+                  </div>
+                `
+                : ""
+            }
+            ${
+              !files.length && readOnly
+                ? '<div class="field-value">-</div>'
+                : ""
+            }
+          </div>
+        `;
+      }
+
+      function formatReadonlyValue(field, value) {
+        if (Array.isArray(value)) {
+          return value.length ? value.join("、") : "-";
+        }
+        if (field.type === "date" && value) {
+          return value;
+        }
+        return value || "-";
+      }
+
+      function renderStickyAction(ticket, readOnly, loadFail) {
+        if (state.successState && state.successState.ticketId === ticket.id) {
+          return "";
+        }
+        if (readOnly || loadFail || ticket.pageType === "link") {
+          return "";
+        }
+        const actions = ticket.actions || [];
+        return `
+          <div class="sticky-action">
+            <div class="sticky-copy">JSON 渲染页根据当前工单可执行动作展示底部处理区。本原型支持暂存和提交，AI 助手只做辅助，不自动提交。</div>
+            <div class="sticky-actions">
+              <button class="button ghost" data-action="back-detail-source">返回${state.detailSource === "history" ? "历史记录" : "我的待办"}</button>
+              ${actions.map((action) => `<button class="button ${action.kind}" data-action="${action.id}" data-ticket-id="${ticket.id}">${escapeHtml(action.label)}</button>`).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderAssistant(ticket) {
+        return `
+          <aside class="surface assistant ${state.assistantCollapsed ? "collapsed" : ""}">
+            <div class="assistant-panel">
+              <div class="assistant-head">
+                <div class="assistant-title">辅助区</div>
+                <button class="button ghost sm" data-action="toggle-assistant">收起</button>
+              </div>
+              <div class="assistant-tabs">
+                <button class="assistant-tab ${state.assistantTab === "ai" ? "active" : ""}" data-action="switch-assistant" data-tab="ai">AI 助手</button>
+                <button class="assistant-tab ${state.assistantTab === "progress" ? "active" : ""}" data-action="switch-assistant" data-tab="progress">工单进展</button>
+                <button class="assistant-tab ${state.assistantTab === "demand" ? "active" : ""}" data-action="switch-assistant" data-tab="demand">需求进展</button>
+              </div>
+              <div class="assistant-body">
+                ${state.assistantTab === "ai" ? renderAiPanel(ticket) : ""}
+                ${state.assistantTab === "progress" ? renderProgressPanel(ticket) : ""}
+                ${state.assistantTab === "demand" ? renderDemandPanel(ticket) : ""}
+              </div>
+              ${state.assistantTab === "ai" ? renderAiComposer(ticket) : '<div class="ai-tip">当前视图可滚动查看，展开后仍保留当前 Tab。</div>'}
+            </div>
+            <div class="assistant-collapsed-panel">
+              <button class="mini-tab ${state.assistantTab === "ai" ? "active" : ""}" data-action="expand-assistant-tab" data-tab="ai">
+                <span class="mini-icon">AI</span>
+                <span>AI</span>
+              </button>
+              <button class="mini-tab ${state.assistantTab === "progress" ? "active" : ""}" data-action="expand-assistant-tab" data-tab="progress">
+                <span class="mini-icon">工</span>
+                <span>工单</span>
+              </button>
+              <button class="mini-tab ${state.assistantTab === "demand" ? "active" : ""}" data-action="expand-assistant-tab" data-tab="demand">
+                <span class="mini-icon">需</span>
+                <span>需求</span>
+              </button>
+            </div>
+          </aside>
+        `;
+      }
+
+      function renderAiPanel(ticket) {
+        const messages = ticket.aiMessages || [];
+        return `
+          <div class="chat-list">
+            ${messages.map((message) => `<div class="chat-bubble ${message.role === "user" ? "user" : "assistant"}">${escapeHtml(message.content)}</div>`).join("")}
+          </div>
+        `;
+      }
+
+      function renderAiComposer(ticket) {
+        return `
+          <div class="ai-composer">
+            <div class="ai-tip">AI 只做摘要、问答、检查、提示、建议和草拟，不自动提交、不改状态。</div>
+            <textarea class="textarea" id="aiPromptInput" placeholder="输入问题，向 AI 助手索要摘要、检查项或草拟建议"></textarea>
+            <button class="button primary" data-action="send-ai" data-ticket-id="${ticket.id}">发送</button>
+          </div>
+        `;
+      }
+
+      function renderProgressPanel(ticket) {
+        return `
+          <div class="timeline">
+            ${(ticket.progress || []).map((item) => `
+              <div class="timeline-item">
+                <div class="timeline-head">
+                  <div class="timeline-title">${escapeHtml(item.type)} · ${escapeHtml(item.status)}</div>
+                  <div class="timeline-meta">${escapeHtml(formatDateTime(item.time))}</div>
+                </div>
+                <div class="timeline-meta">${escapeHtml(item.actor)}</div>
+                <div class="section-copy">${escapeHtml(item.content)}</div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      function renderDemandPanel(ticket) {
+        return `
+          <div class="demand-list">
+            ${(ticket.demandProgress || []).map((item) => `
+              <div class="demand-item ${item.current ? "current" : ""}">
+                <div class="demand-head">
+                  <div class="demand-title">${escapeHtml(item.title)}</div>
+                  <div class="demand-meta">${escapeHtml(formatDateTime(item.time))}</div>
+                </div>
+                <div class="pill-row">
+                  <span class="status-tag ${statusClass(item.status)}">${escapeHtml(item.status)}</span>
+                  ${item.current ? '<span class="pill">当前工单</span>' : ""}
+                </div>
+                <div class="section-copy">${escapeHtml(item.note || "")}</div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      function getPageMeta() {
+        if (state.view === "history") {
+          return {
+            title: "历史记录",
+            subtitle: "查询已完成、已取消以及当前用户曾处理过的工单，默认按处理时间倒序排列。",
+            actions: '<button class="button ghost" data-action="go-view" data-view="todo">返回我的待办</button>'
+          };
+        }
+        if (state.view === "detail") {
+          const ticket = getTicket(state.detailTicketId);
+          return {
+            title: ticket ? ticket.ticketName : "工单详情",
+            subtitle: ticket ? `${ticket.demandName} · ${ticket.code}` : "查看工单头部信息、处理页和右侧辅助区。",
+            actions: `<button class="button ghost" data-action="back-detail-source">返回${state.detailSource === "history" ? "历史记录" : "我的待办"}</button>`
+          };
+        }
+        return {
+          title: "我的待办",
+          subtitle: "处理人进入工作台后直接看到分配给自己的人工工单，不需要在复杂列表中主动查找。",
+          actions: '<button class="button ghost" data-action="go-view" data-view="history">历史记录</button>'
+        };
+      }
+
+      function render() {
+        const app = document.getElementById("app");
+        const header = getPageMeta();
+        document.getElementById("pageTitle").textContent = header.title;
+        document.getElementById("pageSubtitle").textContent = header.subtitle;
+        document.getElementById("headerActions").innerHTML = header.actions;
+        document.getElementById("sidebarOpenCount").textContent = getTodoTickets().length;
+        document.querySelectorAll("[data-nav]").forEach((item) => {
+          item.classList.toggle("active", item.getAttribute("data-nav") === (state.view === "detail" ? state.detailSource : state.view));
+        });
+        if (state.view === "todo") {
+          app.innerHTML = renderTodoView();
+        } else if (state.view === "history") {
+          app.innerHTML = renderHistoryView();
+        } else {
+          const ticket = getTicket(state.detailTicketId);
+          app.innerHTML = ticket ? renderDetailView(ticket) : "";
+        }
+        renderToasts();
+      }
+
+      function renderToasts() {
+        const toastRoot = document.getElementById("toastStack");
+        toastRoot.innerHTML = state.toasts
+          .map((toast) => `
+            <div class="toast">
+              <strong>${escapeHtml(toast.title)}</strong>
+              <div>${escapeHtml(toast.message)}</div>
+            </div>
+          `)
+          .join("");
+      }
+
+      function pushToast(title, message) {
+        const toast = { id: `${Date.now()}-${Math.random()}`, title, message };
+        state.toasts.push(toast);
+        renderToasts();
+        window.setTimeout(() => {
+          state.toasts = state.toasts.filter((item) => item.id !== toast.id);
+          renderToasts();
+        }, 2400);
+      }
+
+      function openTicket(ticketId, source) {
+        state.view = "detail";
+        state.detailSource = source;
+        state.detailTicketId = ticketId;
+        state.selectedTicketId = ticketId;
+        state.successState = null;
+        clearErrors(ticketId);
+        render();
+      }
+
+      function goBackFromDetail() {
+        state.view = state.detailSource;
+        state.detailTicketId = null;
+        state.successState = null;
+        render();
+      }
+
+      function updateFilter(field, value, target) {
+        if (target === "todo") {
+          state.todoFilters[field] = value;
+        } else {
+          state.historyFilters[field] = value;
+        }
+        render();
+      }
+
+      function clearFilters(target) {
+        if (target === "todo") {
+          state.todoFilters = {
+            keyword: "",
+            status: "all",
+            due: "all",
+            demand: "all",
+            sort: "default"
+          };
+        } else {
+          state.historyFilters = {
+            keyword: "",
+            status: "all",
+            sort: "processed-desc"
+          };
+        }
+        render();
+      }
+
+      function setDraftValue(ticketId, fieldId, value) {
+        const ticket = getTicket(ticketId);
+        const draft = ensureDraft(ticket);
+        draft[fieldId] = value;
+      }
+
+      function addMockFile(ticketId, fieldId, index) {
+        const ticket = getTicket(ticketId);
+        const draft = ensureDraft(ticket);
+        const next = Array.isArray(draft[fieldId]) ? [...draft[fieldId]] : [];
+        const stamp = new Date().getTime().toString().slice(-4);
+        const fileName = `upload-${fieldId}-${stamp}.pdf`;
+        if (typeof index === "number" && Number.isFinite(index) && next[index]) {
+          next[index] = fileName;
+        } else {
+          next.push(fileName);
+        }
+        draft[fieldId] = next;
+        clearErrors(ticketId);
+        render();
+      }
+
+      function removeMockFile(ticketId, fieldId, index) {
+        const ticket = getTicket(ticketId);
+        const draft = ensureDraft(ticket);
+        const next = Array.isArray(draft[fieldId]) ? [...draft[fieldId]] : [];
+        next.splice(index, 1);
+        draft[fieldId] = next;
+        render();
+      }
+
+      function validateTicket(ticket) {
+        const draft = ensureDraft(ticket);
+        const errors = {};
+        (ticket.sections || []).forEach((section) => {
+          (section.fields || []).forEach((field) => {
+            if (!field.required) {
+              return;
+            }
+            const value = draft[field.id];
+            const empty =
+              value === "" ||
+              value == null ||
+              (Array.isArray(value) && value.length === 0);
+            if (empty) {
+              errors[field.id] = `${field.label}未填写`;
+            }
+          });
+        });
+        state.errorsById[ticket.id] = errors;
+        return errors;
+      }
+
+      function getNextTicketId(currentId) {
+        const list = filterTodoTickets();
+        const index = list.findIndex((ticket) => ticket.id === currentId);
+        if (index === -1) {
+          return null;
+        }
+        const next = list[index + 1];
+        return next ? next.id : null;
+      }
+
+      function submitTicket(ticketId) {
+        const ticket = getTicket(ticketId);
+        const errors = validateTicket(ticket);
+        if (Object.keys(errors).length) {
+          render();
+          pushToast("提交失败", "仍有必填项未完成，已为你标出错误字段。");
+          return;
+        }
+        const nextTicketId = getNextTicketId(ticketId);
+        ticket.status = "已完成";
+        ticket.processedAt = new Date().toISOString();
+        ticket.progress = [
+          {
+            type: "完成",
+            status: "已完成",
+            actor: "陈雨安",
+            time: new Date().toISOString(),
+            content: "已在工作台提交处理结果。"
+          },
+          ...(ticket.progress || [])
+        ];
+        state.successState = { ticketId, nextTicketId };
+        clearErrors(ticketId);
+        render();
+        pushToast("提交成功", nextTicketId ? "处理记录已保存，可继续处理下一单。" : "处理记录已保存，当前排序下没有下一单。");
+      }
+
+      function saveDraft(ticketId) {
+        clearErrors(ticketId);
+        pushToast("已暂存草稿", "当前填写内容已保留在原型内。");
+      }
+
+      function locateField(fieldId) {
+        const target = document.querySelector(`[data-field-block="${fieldId}"]`);
+        if (!target) {
+          return;
+        }
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.remove("pulse");
+        window.setTimeout(() => target.classList.add("pulse"), 50);
+      }
+
+      document.body.addEventListener("click", (event) => {
+        const actionEl = event.target.closest("[data-action]");
+        const navEl = event.target.closest("[data-nav]");
+        if (navEl) {
+          const nextView = navEl.getAttribute("data-nav");
+          state.view = nextView;
+          state.detailTicketId = null;
+          state.successState = null;
+          render();
+          return;
+        }
+        if (!actionEl) {
+          return;
+        }
+        const action = actionEl.getAttribute("data-action");
+        const ticketId = actionEl.getAttribute("data-ticket-id");
+        if (action === "go-view") {
+          state.view = actionEl.getAttribute("data-view");
+          state.detailTicketId = null;
+          state.successState = null;
+          render();
+          return;
+        }
+        if (action === "open-ticket") {
+          openTicket(ticketId, actionEl.getAttribute("data-source") || "todo");
+          return;
+        }
+        if (action === "quick-filter") {
+          state.todoFilters.due = actionEl.getAttribute("data-due") || "all";
+          render();
+          return;
+        }
+        if (action === "clear-filters") {
+          clearFilters(actionEl.getAttribute("data-target"));
+          return;
+        }
+        if (action === "apply-search") {
+          const target = actionEl.getAttribute("data-target");
+          const input = document.getElementById(target === "todo" ? "todoSearchInput" : "historySearchInput");
+          updateFilter("keyword", input ? input.value.trim() : "", target);
+          return;
+        }
+        if (action === "back-detail-source") {
+          goBackFromDetail();
+          return;
+        }
+        if (action === "back-to-todo") {
+          state.view = "todo";
+          state.detailTicketId = null;
+          state.detailSource = "todo";
+          state.successState = null;
+          render();
+          return;
+        }
+        if (action === "retry-load") {
+          state.loadRetried[ticketId] = true;
+          render();
+          pushToast("已重试", "处理页重新加载成功。");
+          return;
+        }
+        if (action === "toggle-assistant") {
+          state.assistantCollapsed = !state.assistantCollapsed;
+          render();
+          return;
+        }
+        if (action === "switch-assistant") {
+          state.assistantTab = actionEl.getAttribute("data-tab");
+          render();
+          return;
+        }
+        if (action === "expand-assistant-tab") {
+          state.assistantCollapsed = false;
+          state.assistantTab = actionEl.getAttribute("data-tab");
+          render();
+          return;
+        }
+        if (action === "pick-segment" || action === "pick-radio") {
+          setDraftValue(ticketId, actionEl.getAttribute("data-field-id"), actionEl.getAttribute("data-value"));
+          clearErrors(ticketId);
+          render();
+          return;
+        }
+        if (action === "toggle-checkbox") {
+          const fieldId = actionEl.getAttribute("data-field-id");
+          const ticket = getTicket(ticketId);
+          const draft = ensureDraft(ticket);
+          const current = Array.isArray(draft[fieldId]) ? [...draft[fieldId]] : [];
+          const value = actionEl.getAttribute("data-value");
+          draft[fieldId] = current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
+          clearErrors(ticketId);
+          render();
+          return;
+        }
+        if (action === "upload-file") {
+          addMockFile(ticketId, actionEl.getAttribute("data-field-id"));
+          pushToast("上传成功", "已模拟补充附件。");
+          return;
+        }
+        if (action === "reupload-file") {
+          addMockFile(ticketId, actionEl.getAttribute("data-field-id"), Number(actionEl.getAttribute("data-index")));
+          pushToast("已重新上传", "附件已更新为新版本。");
+          return;
+        }
+        if (action === "remove-file") {
+          removeMockFile(ticketId, actionEl.getAttribute("data-field-id"), Number(actionEl.getAttribute("data-index")));
+          pushToast("已删除附件", "当前字段附件已移除。");
+          return;
+        }
+        if (action === "download-file") {
+          pushToast("附件操作", "原型中仅展示附件预览和下载入口。");
+          return;
+        }
+        if (action === "locate-field") {
+          locateField(actionEl.getAttribute("data-field-id"));
+          return;
+        }
+        if (action === "save") {
+          saveDraft(ticketId);
+          return;
+        }
+        if (action === "submit") {
+          submitTicket(ticketId);
+          return;
+        }
+        if (action === "go-next-ticket") {
+          const nextId = state.successState ? state.successState.nextTicketId : null;
+          state.successState = null;
+          if (nextId) {
+            openTicket(nextId, "todo");
+          } else {
+            state.view = "todo";
+            state.detailTicketId = null;
+            render();
+          }
+          return;
+        }
+        if (action === "send-ai") {
+          const ticket = getTicket(ticketId);
+          const input = document.getElementById("aiPromptInput");
+          const question = input ? input.value.trim() : "";
+          if (!question) {
+            pushToast("请输入问题", "你可以向 AI 索要摘要、检查项或建议。");
+            return;
+          }
+          ticket.aiMessages = ticket.aiMessages || [];
+          ticket.aiMessages.push({ role: "user", content: question });
+          ticket.aiMessages.push({ role: "assistant", content: "这里是一期占位回复：我可以帮你总结字段风险、给出检查建议和草拟填写文案，但不会自动提交或变更工单状态。" });
+          render();
+          return;
+        }
+      });
+
+      document.body.addEventListener("change", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+          return;
+        }
+        if (target.id === "todoStatusSelect") {
+          updateFilter("status", target.value, "todo");
+          return;
+        }
+        if (target.id === "todoDueSelect") {
+          updateFilter("due", target.value, "todo");
+          return;
+        }
+        if (target.id === "todoDemandSelect") {
+          updateFilter("demand", target.value, "todo");
+          return;
+        }
+        if (target.id === "todoSortSelect") {
+          updateFilter("sort", target.value, "todo");
+          return;
+        }
+        if (target.id === "historyStatusSelect") {
+          updateFilter("status", target.value, "history");
+          return;
+        }
+        if (target.id === "historySortSelect") {
+          updateFilter("sort", target.value, "history");
+          return;
+        }
+        if (target.matches("[data-ticket-id][data-field-id]")) {
+          setDraftValue(target.getAttribute("data-ticket-id"), target.getAttribute("data-field-id"), target.value);
+        }
+      });
+
+      document.body.addEventListener("input", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+          return;
+        }
+        if (target.matches("textarea[data-ticket-id][data-field-id], input[data-ticket-id][data-field-id]")) {
+          setDraftValue(target.getAttribute("data-ticket-id"), target.getAttribute("data-field-id"), target.value);
+        }
+      });
+
+      document.body.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") {
+          return;
+        }
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+          return;
+        }
+        if (target.id === "todoSearchInput") {
+          event.preventDefault();
+          updateFilter("keyword", target.value.trim(), "todo");
+          return;
+        }
+        if (target.id === "historySearchInput") {
+          event.preventDefault();
+          updateFilter("keyword", target.value.trim(), "history");
+        }
+      });
+
+      render();
+    </script>
+  </body>
+</html>

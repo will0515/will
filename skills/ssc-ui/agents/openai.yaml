@@ -1,0 +1,4 @@
+interface:
+  display_name: "B-end Page Builder"
+  short_description: "Build reusable B-end pages from your component system."
+  default_prompt: "Use $b-end-component-page-builder to turn my product requirements into a reusable B-end page with my component system."

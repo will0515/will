@@ -1,6 +1,6 @@
 ---
-name: b-end-component-page-builder
-description: Build or update reusable B-end product pages from structured requirements and an evolving UI component system. Use when Codex needs to translate product requirements into page structure, component maps, page states, and front-end implementation; extend or normalize components, tokens, and variants; or keep future page work aligned with this user's private admin design system.
+name: ssc-ui
+description: Short alias for the personal B-end component page builder skill. Use when Codex needs to turn product requirements into reusable page structure, component maps, page states, and front-end implementation based on this private UI component system.
 ---
 
 # B-end Component Page Builder

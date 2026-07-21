@@ -177,12 +177,6 @@
         box-shadow: 0 0 0 4px rgba(12, 155, 114, 0.08);
       }
 
-      .chip-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
       .component-directory {
         display: grid;
         gap: 12px;
@@ -265,31 +259,6 @@
         background: rgba(206, 224, 214, 0.9);
       }
 
-      .filter-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        height: 34px;
-        padding: 0 14px;
-        border: 1px solid var(--color-border);
-        border-radius: 999px;
-        color: var(--color-text-secondary);
-        background: rgba(255, 255, 255, 0.96);
-        transition: all 180ms ease;
-      }
-
-      .filter-chip.active,
-      .filter-chip:hover {
-        color: var(--color-primary);
-        border-color: rgba(12, 155, 114, 0.26);
-        background: var(--color-primary-soft);
-      }
-
-      .filter-chip strong {
-        font-size: 12px;
-        font-weight: 700;
-      }
-
       .section-nav {
         display: grid;
         gap: 8px;
@@ -335,26 +304,6 @@
         text-align: center;
         color: var(--color-text-muted);
         background: rgba(245, 246, 245, 0.96);
-      }
-
-      .sidebar-note {
-        margin-top: auto;
-        padding: 18px;
-        border-radius: 22px;
-        background: linear-gradient(180deg, rgba(232, 248, 243, 0.36), rgba(232, 248, 243, 0.88));
-      }
-
-      .sidebar-note strong {
-        display: block;
-        font-size: 14px;
-        color: var(--color-text-title);
-      }
-
-      .sidebar-note p {
-        margin: 8px 0 0;
-        font-size: 12px;
-        line-height: 1.7;
-        color: var(--color-text-secondary);
       }
 
       .catalog-main {
@@ -1520,17 +1469,8 @@
           <p class="sidebar-title">快速查找</p>
           <label class="search-field">
             <span class="search-icon" aria-hidden="true"></span>
-            <input id="searchInput" type="text" placeholder="搜索组件名、类型或关键词" />
+            <input id="searchInput" type="text" placeholder="搜索组件名或关键词" />
           </label>
-        </div>
-
-        <div>
-          <p class="sidebar-title">组件范围</p>
-          <div class="chip-row" id="scopeChips">
-            <button class="filter-chip active" type="button" data-scope="all">全部 <strong>34</strong></button>
-            <button class="filter-chip" type="button" data-scope="base">基础 <strong>27</strong></button>
-            <button class="filter-chip" type="button" data-scope="business">业务 <strong>7</strong></button>
-          </div>
         </div>
 
         <div class="component-directory">
@@ -1545,10 +1485,6 @@
           <nav class="component-nav" id="componentNav"></nav>
         </div>
 
-        <div class="sidebar-note">
-          <strong>使用方式</strong>
-          <p>左侧就是整个页面的组件导航。你可以直接按组件名跳转，也可以先搜索或按基础/业务筛选后再查看。</p>
-        </div>
       </aside>
 
       <main class="catalog-main">
@@ -2618,7 +2554,6 @@
 
     <script>
       const searchInput = document.getElementById("searchInput");
-      const scopeChips = Array.from(document.querySelectorAll("#scopeChips .filter-chip"));
       const cards = Array.from(document.querySelectorAll(".component-card"));
       const sections = Array.from(document.querySelectorAll(".component-section"));
       const overlay = document.getElementById("overlay");
@@ -2736,7 +2671,6 @@
         }
       };
 
-      let currentScope = "all";
       let toastId = 0;
 
       function normalizeText(value) {
@@ -2822,10 +2756,9 @@
       function applyFilters() {
         const keyword = normalizeText(searchInput.value);
         cards.forEach((card) => {
-          const matchesScope = currentScope === "all" || card.dataset.scope === currentScope;
           const haystack = normalizeText(card.dataset.search + " " + card.textContent);
           const matchesKeyword = !keyword || haystack.includes(keyword);
-          card.classList.toggle("hidden", !(matchesScope && matchesKeyword));
+          card.classList.toggle("hidden", !matchesKeyword);
         });
         updateSectionCounts();
       }
@@ -2864,14 +2797,6 @@
       }
 
       searchInput.addEventListener("input", applyFilters);
-
-      scopeChips.forEach((chip) => {
-        chip.addEventListener("click", () => {
-          currentScope = chip.dataset.scope;
-          scopeChips.forEach((item) => item.classList.toggle("active", item === chip));
-          applyFilters();
-        });
-      });
 
       document.addEventListener("click", (event) => {
         const toastButton = event.target.closest("[data-toast]");
@@ -2927,17 +2852,8 @@
 
         searchInput.value = "";
         applyFilters();
-        const businessChip = document.querySelector('.filter-chip[data-scope="business"]');
-        businessChip.click();
-        results.businessVisibleCount = document.querySelectorAll('.component-card[data-scope="business"]:not(.hidden)').length;
-        results.baseHiddenWhenBusiness = document.querySelectorAll('.component-card[data-scope="base"]:not(.hidden)').length === 0;
         results.componentNavVisibleCount = document.querySelectorAll('#componentNav .component-link:not(.hidden)').length;
         results.leftComponentNavExists = !!document.querySelector("#componentNav .component-link");
-
-        const allChip = document.querySelector('.filter-chip[data-scope="all"]');
-        allChip.click();
-        searchInput.value = "";
-        applyFilters();
 
         showToast("success");
         results.toastTitle = document.querySelector(".toast:last-child .toast-title")?.textContent || "";
