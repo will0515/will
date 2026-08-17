@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>输入框组件 · Sketch 组件还原</title>
+  <!--
+    解析来源：输入框.sketch（2026-08-04）
+
+    Symbol Master：
+    - 输入框/中/单行：200 × 40
+    - 输入框/小/单行：190 × 30
+    - 输入框/中/搜索框：185 × 40
+    - 输入框/小/搜索框：181 × 30
+    - 输入框/中/富文本：200 × 40
+    - 输入框/小/富文本：200 × 30
+
+    共同样式：
+    - Source Han Sans SC Regular / 12px / 20px
+    - 边框 #E5EAE7 / 1px
+    - 占位文字 #CCCCCC
+    - 中号圆角 10px，小号圆角 8px
+  -->
+  <style>
+    @font-face {
+      font-family: "Source Han Sans SC Local";
+      src: url("./sketch_input_extracted/fonts/ad7a04c007e7ad0c09b8931b803932d27d61002d")
+        format("opentype");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
+
+    :root {
+      --page-bg: #f5f7f6;
+      --surface: #ffffff;
+      --text: #2f2f2f;
+      --secondary: #6f6a62;
+      --muted: #9da5a1;
+      --placeholder: #cccccc;
+      --border: #e5eae7;
+      --border-hover: #bdc8c3;
+      --primary: #0c9b72;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      padding: 40px 24px 64px;
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: "Source Han Sans SC Local", "Source Han Sans SC",
+        "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .component-sheet {
+      width: min(920px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: 0 16px 46px rgba(35, 48, 42, 0.06);
+    }
+
+    .sheet-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 28px;
+      padding: 28px 32px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sheet-title {
+      margin: 0;
+      color: #222222;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 30px;
+    }
+
+    .sheet-description {
+      margin: 4px 0 0;
+      color: var(--secondary);
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .sheet-version {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 18px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .component-item {
+      min-width: 0;
+      min-height: 196px;
+      padding: 24px 28px 28px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .component-item:nth-child(2n) {
+      border-right: 0;
+    }
+
+    .component-item:nth-last-child(-n + 2) {
+      border-bottom: 0;
+    }
+
+    .item-title {
+      margin: 0;
+      color: #222222;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 20px;
+    }
+
+    .item-spec {
+      margin: 2px 0 22px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 18px;
+    }
+
+    .stage {
+      display: flex;
+      align-items: flex-start;
+      min-height: 72px;
+      padding: 16px;
+      overflow: auto;
+      border: 1px solid #edf1ef;
+      border-radius: 10px;
+      background: #fafbfa;
+    }
+
+    .input,
+    .search,
+    .textarea-shell {
+      flex: 0 0 auto;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text);
+      font-family: "Source Han Sans SC Local", "Source Han Sans SC",
+        "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 20px;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    .input:hover,
+    .search:hover,
+    .textarea-shell:hover {
+      border-color: var(--border-hover);
+    }
+
+    .input:focus,
+    .search:focus-within,
+    .textarea-shell:focus-within {
+      border-color: var(--primary);
+      outline: 0;
+      box-shadow: 0 0 0 2px rgba(12, 155, 114, 0.1);
+    }
+
+    .input {
+      display: block;
+      margin: 0;
+      outline: 0;
+    }
+
+    .input-medium {
+      width: 200px;
+      height: 40px;
+      padding: 9px;
+      border-radius: 10px;
+    }
+
+    .input-small {
+      width: 190px;
+      height: 30px;
+      padding: 4px 7px;
+      border-radius: 8px;
+    }
+
+    .input::placeholder,
+    .search-input::placeholder,
+    .textarea::placeholder {
+      color: var(--placeholder);
+      opacity: 1;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .search-medium {
+      width: 185px;
+      height: 40px;
+      padding: 9px;
+      border-radius: 10px;
+    }
+
+    .search-small {
+      width: 181px;
+      height: 30px;
+      padding: 4px 7px;
+      border-radius: 8px;
+    }
+
+    .search-icon {
+      display: block;
+      flex: 0 0 20px;
+      width: 20px;
+      height: 20px;
+      color: #aaaaaa;
+    }
+
+    .search-input {
+      flex: 1 1 auto;
+      width: 140px;
+      min-width: 0;
+      height: 20px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      line-height: 20px;
+    }
+
+    .search-input::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    .textarea-shell {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      width: 200px;
+      min-width: 80px;
+    }
+
+    .textarea-medium {
+      min-height: 40px;
+      padding: 9px;
+      border-radius: 10px;
+    }
+
+    .textarea-small {
+      min-height: 30px;
+      padding: 4px 7px;
+      border-radius: 8px;
+    }
+
+    .textarea {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: 20px;
+      min-height: 20px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      resize: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      line-height: 20px;
+    }
+
+    .resize-handle {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 24px;
+      height: 24px;
+      cursor: nwse-resize;
+      touch-action: none;
+    }
+
+    .resize-handle::before,
+    .resize-handle::after {
+      content: "";
+      position: absolute;
+      height: 1.5px;
+      border-radius: 999px;
+      background: #cccccc;
+      transform: rotate(-45deg);
+      transform-origin: center;
+    }
+
+    .resize-handle::before {
+      right: 5px;
+      bottom: 9px;
+      width: 10px;
+    }
+
+    .resize-handle::after {
+      right: 5.5px;
+      bottom: 7.25px;
+      width: 5px;
+    }
+
+    .token-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid var(--border);
+      background: #fbfcfb;
+    }
+
+    .token {
+      padding: 16px 20px;
+      border-right: 1px solid var(--border);
+    }
+
+    .token:last-child {
+      border-right: 0;
+    }
+
+    .token span,
+    .token strong {
+      display: block;
+    }
+
+    .token span {
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 15px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .token strong {
+      margin-top: 3px;
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 18px;
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 16px 10px 36px;
+      }
+
+      .sheet-header {
+        align-items: flex-start;
+        padding: 22px 20px 18px;
+      }
+
+      .component-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .component-item,
+      .component-item:nth-child(2n) {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .component-item:last-child {
+        border-bottom: 0;
+      }
+
+      .token-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .token:nth-child(2n) {
+        border-right: 0;
+      }
+
+      .token:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--border);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .input,
+      .search,
+      .textarea-shell {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="component-sheet" aria-labelledby="page-title">
+    <header class="sheet-header">
+      <div>
+        <h1 class="sheet-title" id="page-title">输入框组件</h1>
+        <p class="sheet-description">根据最新版「输入框.sketch」重新解析与实现</p>
+      </div>
+      <span class="sheet-version">6 SYMBOL MASTERS</span>
+    </header>
+
+    <div class="component-grid">
+      <section class="component-item">
+        <h2 class="item-title">输入框 / 中 / 单行</h2>
+        <p class="item-spec">200 × 40 · 圆角 10 · 内边距 10</p>
+        <div class="stage">
+          <input
+            class="input input-medium"
+            type="text"
+            placeholder="输入文本"
+            aria-label="中号单行输入框"
+          >
+        </div>
+      </section>
+
+      <section class="component-item">
+        <h2 class="item-title">输入框 / 小 / 单行</h2>
+        <p class="item-spec">190 × 30 · 圆角 8 · 左右内边距 8</p>
+        <div class="stage">
+          <input
+            class="input input-small"
+            type="text"
+            placeholder="输入文本"
+            aria-label="小号单行输入框"
+          >
+        </div>
+      </section>
+
+      <section class="component-item">
+        <h2 class="item-title">输入框 / 中 / 搜索框</h2>
+        <p class="item-spec">185 × 40 · 20px 搜索图标 · 间距 5</p>
+        <div class="stage">
+          <label class="search search-medium">
+            <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="8.2" cy="8.2" r="5.7" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+              <path d="m12.5 12.5 4.8 4.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            </svg>
+            <input
+              class="search-input"
+              type="search"
+              placeholder="搜索工单名称 /工单模板ID"
+              aria-label="中号搜索框"
+            >
+          </label>
+        </div>
+      </section>
+
+      <section class="component-item">
+        <h2 class="item-title">输入框 / 小 / 搜索框</h2>
+        <p class="item-spec">181 × 30 · 20px 搜索图标 · 间距 5</p>
+        <div class="stage">
+          <label class="search search-small">
+            <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="8.2" cy="8.2" r="5.7" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+              <path d="m12.5 12.5 4.8 4.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            </svg>
+            <input
+              class="search-input"
+              type="search"
+              placeholder="搜索工单名称 /工单模板ID"
+              aria-label="小号搜索框"
+            >
+          </label>
+        </div>
+      </section>
+
+      <section class="component-item">
+        <h2 class="item-title">输入框 / 中 / 富文本</h2>
+        <p class="item-spec">200 × 40 起 · 内容自动增高 · 可拖拽调整</p>
+        <div class="stage">
+          <label class="textarea-shell textarea-medium">
+            <textarea
+              class="textarea"
+              rows="1"
+              placeholder="输入文本"
+              aria-label="中号富文本输入框"
+            ></textarea>
+            <span class="resize-handle" role="separator" aria-label="拖拽调整富文本框大小"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="component-item">
+        <h2 class="item-title">输入框 / 小 / 富文本</h2>
+        <p class="item-spec">200 × 30 起 · 内容自动增高 · 可拖拽调整</p>
+        <div class="stage">
+          <label class="textarea-shell textarea-small">
+            <textarea
+              class="textarea"
+              rows="1"
+              placeholder="输入文本"
+              aria-label="小号富文本输入框"
+            ></textarea>
+            <span class="resize-handle" role="separator" aria-label="拖拽调整富文本框大小"></span>
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <footer class="token-row" aria-label="输入框样式参数">
+      <div class="token"><span>Font</span><strong>Source Han Sans SC / 12</strong></div>
+      <div class="token"><span>Border</span><strong>#E5EAE7 / 1px</strong></div>
+      <div class="token"><span>Placeholder</span><strong>#CCCCCC</strong></div>
+      <div class="token"><span>Line height</span><strong>20px</strong></div>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      document.querySelectorAll(".textarea").forEach((textarea) => {
+        const shell = textarea.closest(".textarea-shell");
+        const handle = shell.querySelector(".resize-handle");
+        const isSmall = shell.classList.contains("textarea-small");
+        const minimumHeight = isSmall ? 30 : 40;
+        const frameSize = isSmall ? 10 : 20;
+
+        const fitContent = () => {
+          shell.style.height = "auto";
+          textarea.style.height = "auto";
+          textarea.style.height = `${Math.max(20, textarea.scrollHeight)}px`;
+        };
+
+        textarea.addEventListener("input", fitContent);
+        fitContent();
+
+        handle.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          const startX = event.clientX;
+          const startY = event.clientY;
+          const startWidth = shell.offsetWidth;
+          const startHeight = shell.offsetHeight;
+
+          const onMove = (moveEvent) => {
+            const maximumWidth = shell.parentElement.clientWidth - 32;
+            const width = Math.min(
+              Math.max(80, startWidth + moveEvent.clientX - startX),
+              maximumWidth
+            );
+            const height = Math.max(
+              minimumHeight,
+              startHeight + moveEvent.clientY - startY
+            );
+            shell.style.width = `${width}px`;
+            shell.style.height = `${height}px`;
+            textarea.style.height = `${Math.max(20, height - frameSize)}px`;
+          };
+
+          const onEnd = () => {
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onEnd);
+            window.removeEventListener("pointercancel", onEnd);
+            document.body.style.userSelect = "";
+          };
+
+          document.body.style.userSelect = "none";
+          window.addEventListener("pointermove", onMove);
+          window.addEventListener("pointerup", onEnd);
+          window.addEventListener("pointercancel", onEnd);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

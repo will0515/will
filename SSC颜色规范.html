@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>SSC 颜色规范</title>
+  <!--
+    设计假设：
+    - 本页用于设计师与前端共同查阅、维护和复制颜色变量。
+    - 颜色值与用户提供的三张截图保持一致，不增补新品牌色。
+    - 桌面端以快速扫描为主，同时适配平板与手机。
+    - 视觉保持克制、精确，沿用参考图的深色工作台语境。
+    - 色块使用纯色矩形，不使用不规则圆形；新增与删除结果保存到 localStorage。
+  -->
+  <style>
+    :root {
+      --page: #171918;
+      --surface: #202321;
+      --surface-raised: #282b29;
+      --surface-hover: #303331;
+      --line: #343735;
+      --line-strong: #454946;
+      --text: #f6f6f6;
+      --text-secondary: #aaa;
+      --text-tertiary: #777c78;
+      --accent: #a2d8c9;
+      --accent-strong: #0c9b72;
+      --focus: #6561ff;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .24);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #555 transparent;
+    }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
+        var(--page);
+      background-size: 28px 28px;
+      color: var(--text);
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--focus) 70%, white);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      padding: 30px 22px;
+      border-right: 1px solid var(--line);
+      background: rgba(23, 25, 24, .9);
+      backdrop-filter: blur(18px);
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 8px 40px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 9px;
+      background: #0c9b72;
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      box-shadow: 0 8px 24px rgba(12, 155, 114, .22);
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .brand-meta {
+      color: var(--text-tertiary);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .nav-label {
+      margin: 0 10px 10px;
+      color: var(--text-tertiary);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      display: grid;
+      gap: 4px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: background .18s ease, color .18s ease, transform .18s ease;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: var(--surface-raised);
+      color: var(--text);
+    }
+
+    .nav a:hover {
+      transform: translateX(2px);
+    }
+
+    .nav-index {
+      color: var(--text-tertiary);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .sidebar-note {
+      position: absolute;
+      right: 22px;
+      bottom: 26px;
+      left: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--text-tertiary);
+      font-size: 12px;
+    }
+
+    main {
+      min-width: 0;
+      padding: 54px clamp(28px, 5vw, 76px) 80px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 40px;
+      align-items: end;
+      max-width: 1360px;
+      margin: 0 auto 78px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      color: var(--accent);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 18px;
+      height: 1px;
+      background: currentColor;
+      content: "";
+    }
+
+    h1 {
+      max-width: 800px;
+      margin: 0;
+      font-size: clamp(44px, 6vw, 82px);
+      font-weight: 650;
+      letter-spacing: -.06em;
+      line-height: .98;
+      text-wrap: balance;
+    }
+
+    .hero p {
+      max-width: 620px;
+      margin: 22px 0 0;
+      color: var(--text-secondary);
+      font-size: 15px;
+      text-wrap: pretty;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .copy-all,
+    .add-category {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 148px;
+      min-height: 46px;
+      padding: 0 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .copy-all:hover,
+    .add-category:hover {
+      border-color: #626763;
+      background: var(--surface-hover);
+      transform: translateY(-1px);
+    }
+
+    .add-category {
+      border-color: var(--accent-strong);
+      background: var(--accent-strong);
+      color: #fff;
+    }
+
+    .add-category:hover {
+      border-color: #12b986;
+      background: #12a97d;
+    }
+
+    .section {
+      max-width: 1360px;
+      margin: 0 auto 88px;
+      scroll-margin-top: 28px;
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: 1fr minmax(260px, 430px);
+      gap: 30px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .section-heading-main {
+      display: flex;
+      gap: 18px;
+      align-items: end;
+      justify-content: space-between;
+    }
+
+    .section-tools {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .section-action {
+      min-height: 40px;
+      padding: 0 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 12px;
+      transition: background .18s ease, border-color .18s ease, color .18s ease;
+    }
+
+    .section-action:hover {
+      border-color: #626763;
+      background: var(--surface-raised);
+      color: var(--text);
+    }
+
+    .section-action.danger:hover {
+      border-color: #8f4545;
+      background: rgba(229, 62, 62, .1);
+      color: #ff8a8a;
+    }
+
+    .section-kicker {
+      margin: 0 0 8px;
+      color: var(--text-tertiary);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(28px, 3vw, 42px);
+      font-weight: 650;
+      letter-spacing: -.045em;
+      line-height: 1.1;
+    }
+
+    .section-description {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-wrap: pretty;
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--line);
+      gap: 1px;
+      box-shadow: var(--shadow);
+    }
+
+    .swatch {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      min-height: 258px;
+      grid-template-rows: 1fr auto;
+      padding: 0;
+      border: 0;
+      background: var(--surface);
+      color: var(--text);
+      text-align: left;
+      cursor: default;
+      isolation: isolate;
+    }
+
+    .swatch::after {
+      position: absolute;
+      inset: 0;
+      border: 2px solid transparent;
+      pointer-events: none;
+      transition: border-color .18s ease;
+      content: "";
+    }
+
+    .swatch:hover::after {
+      border-color: rgba(255, 255, 255, .26);
+    }
+
+    .color-field {
+      position: relative;
+      display: grid;
+      width: 100%;
+      min-height: 176px;
+      place-items: center;
+      overflow: hidden;
+      padding: 0;
+      border: 0;
+      background: var(--swatch);
+      cursor: copy;
+    }
+
+    .color-field::after {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      padding: 5px 8px;
+      border-radius: 5px;
+      background: rgba(0, 0, 0, .18);
+      color: var(--label-color);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 10px;
+      letter-spacing: .04em;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity .18s ease, transform .18s ease;
+      content: "点击复制";
+    }
+
+    .swatch:hover .color-field::after {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .swatch-info {
+      display: grid;
+      gap: 12px;
+      padding: 18px 18px 20px;
+      background: var(--surface);
+    }
+
+    .swatch-topline {
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .swatch-name {
+      overflow: hidden;
+      font-size: 15px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .swatch-role {
+      flex: 0 0 auto;
+      color: var(--text-tertiary);
+      font-size: 11px;
+    }
+
+    .swatch-values {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      color: var(--text-secondary);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .hex {
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+
+    .token {
+      overflow: hidden;
+      color: var(--text-tertiary);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .swatch-actions {
+      display: flex;
+      gap: 8px;
+      padding-top: 3px;
+      border-top: 1px solid var(--line);
+    }
+
+    .swatch-action {
+      min-height: 32px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: 11px;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .swatch-action:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .swatch-action.delete {
+      margin-left: auto;
+    }
+
+    .swatch-action.delete:hover {
+      background: rgba(229, 62, 62, .1);
+      color: #ff8a8a;
+    }
+
+    .empty-state {
+      padding: 72px 24px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .empty-state strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-size: 18px;
+    }
+
+    dialog {
+      width: min(520px, calc(100vw - 32px));
+      padding: 0;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, .55);
+      color: var(--text);
+    }
+
+    dialog::backdrop {
+      background: rgba(5, 7, 6, .72);
+      backdrop-filter: blur(6px);
+    }
+
+    .dialog-form {
+      display: grid;
+    }
+
+    .dialog-header {
+      display: flex;
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dialog-header h3 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -.02em;
+    }
+
+    .dialog-close {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 22px;
+    }
+
+    .dialog-close:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .form-body {
+      display: grid;
+      gap: 18px;
+      padding: 22px 24px 24px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field label {
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      background: #181a19;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+    }
+
+    .field textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--focus);
+      outline: 2px solid rgba(101, 97, 255, .22);
+    }
+
+    .hex-input {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 8px;
+    }
+
+    .hex-input input[type="color"] {
+      min-width: 0;
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .dialog-footer {
+      display: flex;
+      gap: 10px;
+      padding: 16px 24px 22px;
+      border-top: 1px solid var(--line);
+      justify-content: flex-end;
+    }
+
+    .dialog-button {
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .dialog-button.primary {
+      border-color: var(--accent-strong);
+      background: var(--accent-strong);
+      color: white;
+    }
+
+    .dialog-button:hover {
+      background: var(--surface-hover);
+    }
+
+    .dialog-button.primary:hover {
+      background: #12a97d;
+    }
+
+    .rule-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      overflow: hidden;
+      margin-top: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--line);
+    }
+
+    .rule {
+      padding: 20px 22px;
+      background: var(--surface);
+    }
+
+    .rule strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    .rule span {
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .footer {
+      display: flex;
+      max-width: 1360px;
+      margin: 20px auto 0;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+      color: var(--text-tertiary);
+      font-size: 12px;
+      justify-content: space-between;
+    }
+
+    .toast {
+      position: fixed;
+      right: 28px;
+      bottom: 28px;
+      z-index: 50;
+      min-width: 220px;
+      padding: 14px 18px;
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+      border-radius: 10px;
+      background: #202a26;
+      box-shadow: 0 16px 44px rgba(0,0,0,.36);
+      color: var(--text);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1120px) {
+      .palette {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 780px) {
+      .shell {
+        display: block;
+      }
+
+      .sidebar {
+        position: sticky;
+        height: auto;
+        padding: 14px 18px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        margin: 0;
+      }
+
+      .brand-mark {
+        width: 36px;
+        height: 36px;
+      }
+
+      .nav-label,
+      .sidebar-note,
+      .brand-meta {
+        display: none;
+      }
+
+      .nav {
+        display: flex;
+        margin-top: 12px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      .nav a {
+        flex: 0 0 auto;
+        min-height: 40px;
+        padding: 8px 11px;
+      }
+
+      main {
+        padding: 42px 18px 56px;
+      }
+
+      .hero {
+        display: block;
+        margin-bottom: 58px;
+      }
+
+      .copy-all {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .hero-actions {
+        width: 100%;
+        margin-top: 28px;
+      }
+
+      .add-category {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .section {
+        margin-bottom: 66px;
+      }
+
+      .section-heading {
+        display: block;
+      }
+
+      .section-heading-main {
+        align-items: center;
+      }
+
+      .section-description {
+        margin-top: 14px;
+      }
+
+      .rule-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .palette {
+        grid-template-columns: 1fr;
+      }
+
+      .swatch {
+        min-height: 232px;
+      }
+
+      .footer {
+        display: block;
+      }
+
+      .footer span {
+        display: block;
+        margin-top: 4px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SSC</div>
+        <div>
+          <div class="brand-name">颜色规范</div>
+          <div class="brand-meta">Color system · v1.0</div>
+        </div>
+      </div>
+
+      <div class="nav-label">色板索引</div>
+      <nav class="nav" id="categoryNav" aria-label="颜色分组"></nav>
+
+      <div class="sidebar-note">
+        颜色与分类的变更会自动保存在当前浏览器
+      </div>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <div>
+          <div class="eyebrow">SSC Design Foundation</div>
+          <h1>颜色规范</h1>
+          <p>根据现有设计稿整理，共 <span id="colorCount">18</span> 个颜色。可直接新增或删除颜色与分类，所有变更会自动保存在当前浏览器。</p>
+        </div>
+        <div class="hero-actions">
+          <button class="copy-all" type="button" id="copyAll">复制全部 CSS</button>
+          <button class="add-category" type="button" id="addCategory">新建分类</button>
+        </div>
+      </header>
+
+      <div id="sectionsRoot"></div>
+
+      <footer class="footer">
+        <div>SSC Color System</div>
+        <span>点击颜色块复制 HEX · 数据保存在当前浏览器</span>
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="categoryDialog">
+    <form class="dialog-form" id="categoryForm">
+      <div class="dialog-header">
+        <h3>新建颜色分类</h3>
+        <button class="dialog-close" type="button" data-close-dialog="categoryDialog" aria-label="关闭">×</button>
+      </div>
+      <div class="form-body">
+        <div class="field-row">
+          <div class="field">
+            <label for="categoryName">分类名称</label>
+            <input id="categoryName" name="name" required maxlength="24" placeholder="例如：数据可视化色">
+          </div>
+          <div class="field">
+            <label for="categoryCode">英文标识</label>
+            <input id="categoryCode" name="code" maxlength="28" placeholder="例如：Data visualization">
+          </div>
+        </div>
+        <div class="field">
+          <label for="categoryDescription">分类说明</label>
+          <textarea id="categoryDescription" name="description" maxlength="160" placeholder="说明这组颜色的主要用途"></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="dialog-button" type="button" data-close-dialog="categoryDialog">取消</button>
+        <button class="dialog-button primary" type="submit">创建分类</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="colorDialog">
+    <form class="dialog-form" id="colorForm">
+      <div class="dialog-header">
+        <h3>添加颜色</h3>
+        <button class="dialog-close" type="button" data-close-dialog="colorDialog" aria-label="关闭">×</button>
+      </div>
+      <div class="form-body">
+        <div class="field-row">
+          <div class="field">
+            <label for="colorName">颜色名称</label>
+            <input id="colorName" name="name" required maxlength="24" placeholder="例如：成功色">
+          </div>
+          <div class="field">
+            <label for="colorHexText">HEX 色值</label>
+            <div class="hex-input">
+              <input id="colorPicker" type="color" value="#0C9B72" aria-label="选择颜色">
+              <input id="colorHexText" name="hex" required maxlength="7" value="#0C9B72" placeholder="#0C9B72">
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="colorToken">CSS Token</label>
+            <input id="colorToken" name="token" maxlength="48" placeholder="--color-success">
+          </div>
+          <div class="field">
+            <label for="colorRole">建议用途</label>
+            <input id="colorRole" name="role" maxlength="40" placeholder="例如：成功 / 已完成">
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="dialog-button" type="button" data-close-dialog="colorDialog">取消</button>
+        <button class="dialog-button primary" type="submit">添加颜色</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const STORAGE_KEY = "ssc-color-system-v2";
+    const DEFAULT_CATEGORIES = [
+      {
+        id: "neutral",
+        name: "灰度基础色",
+        code: "Foundation",
+        description: "用于页面背景、容器、边框、正文和弱化信息。深浅层级保持中性，避免与业务色争夺注意力。",
+        rules: [
+          { title: "深色层级", text: "黑、黑 1、黑 2 用于深色背景、悬浮层和弱化边界。" },
+          { title: "浅色层级", text: "灰、灰 1、灰 2、灰 3 用于文本、分割线和浅色容器。" }
+        ],
+        colors: [
+          { id: "white", name: "白", hex: "#FFFFFF", token: "--color-white", role: "反白 / 浅色背景" },
+          { id: "black", name: "黑", hex: "#222222", token: "--color-black", role: "主深色" },
+          { id: "black-1", name: "黑 1", hex: "#363636", token: "--color-black-1", role: "深色容器" },
+          { id: "black-2", name: "黑 2", hex: "#555555", token: "--color-black-2", role: "深色边界" },
+          { id: "gray", name: "灰", hex: "#AAAAAA", token: "--color-gray", role: "次级文本" },
+          { id: "gray-1", name: "灰 1", hex: "#CCCCCC", token: "--color-gray-1", role: "弱化文本" },
+          { id: "gray-2", name: "灰 2", hex: "#EEEEEE", token: "--color-gray-2", role: "分割 / 浅底" },
+          { id: "gray-3", name: "灰 3", hex: "#F6F6F6", token: "--color-gray-3", role: "页面浅底" }
+        ]
+      },
+      {
+        id: "ssc",
+        name: "SSC 功能色",
+        code: "Product",
+        description: "绿色作为 SSC 的主功能色；红色用于错误、危险或高优先级提醒。浅绿色用于低强调背景。",
+        rules: [
+          { title: "主操作", text: "绿色 #0C9B72 用于主要按钮、选中状态和关键链接。" },
+          { title: "状态反馈", text: "红色 #E53E3E 仅用于错误、失败和危险操作，避免装饰性使用。" }
+        ],
+        colors: [
+          { id: "red", name: "红色", hex: "#E53E3E", token: "--ssc-red", role: "错误 / 危险" },
+          { id: "green-1", name: "绿 1", hex: "#F3FAF8", token: "--ssc-green-1", role: "最浅背景" },
+          { id: "green", name: "绿色", hex: "#0C9B72", token: "--ssc-green", role: "品牌 / 主操作" },
+          { id: "green-2", name: "绿色 2", hex: "#E5EAE7", token: "--ssc-green-2", role: "弱化背景" },
+          { id: "green-3", name: "绿色 3", hex: "#A2D8C9", token: "--ssc-green-3", role: "柔和强调" }
+        ]
+      },
+      {
+        id: "portal",
+        name: "客户门户色",
+        code: "Customer Portal",
+        description: "以蓝紫色建立客户门户的识别度，浅色阶用于选中背景、信息区块与弱化状态。",
+        rules: [
+          { title: "品牌主色", text: "蓝色 #6561FF 用于主按钮、焦点态和品牌识别元素。" },
+          { title: "浅色背景", text: "蓝色 1–3 用于不同强度的选中、悬浮和页面底色。" }
+        ],
+        colors: [
+          { id: "blue", name: "蓝色", hex: "#6561FF", token: "--portal-blue", role: "品牌 / 主操作" },
+          { id: "blue-1", name: "蓝色 1", hex: "#DFDEF1", token: "--portal-blue-1", role: "选中背景" },
+          { id: "blue-2", name: "蓝色 2", hex: "#EFEFFF", token: "--portal-blue-2", role: "信息背景" },
+          { id: "blue-3", name: "蓝色 3", hex: "#FBFAFF", token: "--portal-blue-3", role: "页面浅底" },
+          { id: "blue-4", name: "蓝色 4", hex: "#B2B1C7", token: "--portal-blue-4", role: "弱化强调" }
+        ]
+      }
+    ];
+
+    function cloneDefaults() {
+      return JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+    }
+
+    function loadCategories() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return Array.isArray(saved) ? saved : cloneDefaults();
+      } catch (error) {
+        return cloneDefaults();
+      }
+    }
+
+    let categories = loadCategories();
+    let activeCategoryId = null;
+    let sectionObserver = null;
+
+    function makeId(prefix) {
+      const unique = window.crypto && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      return `${prefix}-${unique}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function saveCategories() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
+    }
+
+    function hexToRgb(hex) {
+      const value = hex.replace("#", "");
+      return {
+        r: parseInt(value.slice(0, 2), 16),
+        g: parseInt(value.slice(2, 4), 16),
+        b: parseInt(value.slice(4, 6), 16)
+      };
+    }
+
+    function readableLabel(hex) {
+      const { r, g, b } = hexToRgb(hex);
+      const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+      return luminance > 0.62 ? "#222222" : "#FFFFFF";
+    }
+
+    function createSwatch(color, categoryId) {
+      const { r, g, b } = hexToRgb(color.hex);
+      const swatch = document.createElement("article");
+      swatch.className = "swatch";
+      swatch.style.setProperty("--swatch", color.hex);
+      swatch.style.setProperty("--label-color", readableLabel(color.hex));
+      swatch.innerHTML = `
+        <button class="color-field" type="button" aria-label="复制 ${escapeHtml(color.name)} ${color.hex}"></button>
+        <div class="swatch-info">
+          <div class="swatch-topline">
+            <span class="swatch-name">${escapeHtml(color.name)}</span>
+            <span class="swatch-role">${escapeHtml(color.role)}</span>
+          </div>
+          <div class="swatch-values">
+            <span class="hex">${color.hex}</span>
+            <span>RGB ${r}, ${g}, ${b}</span>
+          </div>
+          <div class="token">${escapeHtml(color.token)}</div>
+          <div class="swatch-actions">
+            <button class="swatch-action copy" type="button">复制色值</button>
+            <button class="swatch-action delete" type="button">删除</button>
+          </div>
+        </div>
+      `;
+      swatch.querySelector(".color-field").addEventListener("click", () => copyText(color.hex, `已复制 ${color.name} · ${color.hex}`));
+      swatch.querySelector(".copy").addEventListener("click", () => copyText(color.hex, `已复制 ${color.name} · ${color.hex}`));
+      swatch.querySelector(".delete").addEventListener("click", () => deleteColor(categoryId, color.id));
+      return swatch;
+    }
+
+    function renderApp() {
+      const nav = document.getElementById("categoryNav");
+      const root = document.getElementById("sectionsRoot");
+      const total = categories.reduce((sum, category) => sum + category.colors.length, 0);
+      document.getElementById("colorCount").textContent = total;
+
+      nav.innerHTML = categories.map((category, index) => `
+        <a href="#${category.id}" class="${index === 0 ? "active" : ""}">
+          <span class="nav-index">${String(index + 1).padStart(2, "0")}</span>
+          ${escapeHtml(category.name)}
+        </a>
+      `).join("");
+
+      if (categories.length === 0) {
+        root.innerHTML = `
+          <div class="empty-state">
+            <strong>还没有颜色分类</strong>
+            点击右上角“新建分类”开始整理颜色。
+          </div>
+        `;
+      } else {
+        root.innerHTML = categories.map((category, index) => `
+          <section class="section" id="${category.id}">
+            <div class="section-heading">
+              <div class="section-heading-main">
+                <div>
+                  <p class="section-kicker">${String(index + 1).padStart(2, "0")} / ${escapeHtml(category.code || "Custom")}</p>
+                  <h2>${escapeHtml(category.name)}</h2>
+                </div>
+                <div class="section-tools">
+                  <button class="section-action add-color" type="button" data-category-id="${category.id}">添加颜色</button>
+                  <button class="section-action danger delete-category" type="button" data-category-id="${category.id}">删除分类</button>
+                </div>
+              </div>
+              <p class="section-description">${escapeHtml(category.description || "自定义颜色分类")}</p>
+            </div>
+            <div class="palette" data-category-id="${category.id}"></div>
+            ${category.rules && category.rules.length ? `
+              <div class="rule-panel">
+                ${category.rules.map(rule => `
+                  <div class="rule">
+                    <strong>${escapeHtml(rule.title)}</strong>
+                    <span>${escapeHtml(rule.text)}</span>
+                  </div>
+                `).join("")}
+              </div>
+            ` : ""}
+          </section>
+        `).join("");
+
+        categories.forEach(category => {
+          const palette = root.querySelector(`.palette[data-category-id="${category.id}"]`);
+          if (category.colors.length === 0) {
+            palette.innerHTML = `
+              <div class="empty-state" style="grid-column: 1 / -1">
+                <strong>这个分类还没有颜色</strong>
+                点击上方“添加颜色”创建第一项。
+              </div>
+            `;
+          } else {
+            category.colors.forEach(color => palette.appendChild(createSwatch(color, category.id)));
+          }
+        });
+      }
+
+      root.querySelectorAll(".add-color").forEach(button => {
+        button.addEventListener("click", () => openColorDialog(button.dataset.categoryId));
+      });
+      root.querySelectorAll(".delete-category").forEach(button => {
+        button.addEventListener("click", () => deleteCategory(button.dataset.categoryId));
+      });
+
+      observeSections();
+    }
+
+    let toastTimer;
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    async function copyText(text, message) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (error) {
+        const input = document.createElement("textarea");
+        input.value = text;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+      }
+      showToast(message);
+    }
+
+    function openColorDialog(categoryId) {
+      activeCategoryId = categoryId;
+      document.getElementById("colorForm").reset();
+      document.getElementById("colorPicker").value = "#0C9B72";
+      document.getElementById("colorHexText").value = "#0C9B72";
+      document.getElementById("colorDialog").showModal();
+      document.getElementById("colorName").focus();
+    }
+
+    function deleteColor(categoryId, colorId) {
+      const category = categories.find(item => item.id === categoryId);
+      const color = category && category.colors.find(item => item.id === colorId);
+      if (!category || !color) return;
+      if (!window.confirm(`确定删除“${color.name} ${color.hex}”吗？`)) return;
+      category.colors = category.colors.filter(item => item.id !== colorId);
+      saveCategories();
+      renderApp();
+      showToast(`已删除颜色 · ${color.name}`);
+    }
+
+    function deleteCategory(categoryId) {
+      const category = categories.find(item => item.id === categoryId);
+      if (!category) return;
+      const detail = category.colors.length ? `，其中包含 ${category.colors.length} 个颜色` : "";
+      if (!window.confirm(`确定删除“${category.name}”分类${detail}吗？`)) return;
+      categories = categories.filter(item => item.id !== categoryId);
+      saveCategories();
+      renderApp();
+      showToast(`已删除分类 · ${category.name}`);
+    }
+
+    document.getElementById("addCategory").addEventListener("click", () => {
+      document.getElementById("categoryForm").reset();
+      document.getElementById("categoryDialog").showModal();
+      document.getElementById("categoryName").focus();
+    });
+
+    document.querySelectorAll("[data-close-dialog]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.getElementById(button.dataset.closeDialog).close();
+      });
+    });
+
+    document.getElementById("categoryForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const name = String(form.get("name") || "").trim();
+      if (!name) return;
+      const category = {
+        id: makeId("category"),
+        name,
+        code: String(form.get("code") || "Custom").trim() || "Custom",
+        description: String(form.get("description") || "").trim(),
+        rules: [],
+        colors: []
+      };
+      categories.push(category);
+      saveCategories();
+      event.currentTarget.closest("dialog").close();
+      renderApp();
+      showToast(`已创建分类 · ${category.name}`);
+    });
+
+    document.getElementById("colorForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const name = String(form.get("name") || "").trim();
+      const hex = String(form.get("hex") || "").trim().toUpperCase();
+      const hexInput = document.getElementById("colorHexText");
+      if (!/^#[0-9A-F]{6}$/.test(hex)) {
+        hexInput.setCustomValidity("请输入完整的 6 位 HEX 色值，例如 #0C9B72");
+        hexInput.reportValidity();
+        return;
+      }
+      hexInput.setCustomValidity("");
+      const category = categories.find(item => item.id === activeCategoryId);
+      if (!category || !name) return;
+      let token = String(form.get("token") || "").trim();
+      if (token && !token.startsWith("--")) token = `--${token}`;
+      if (!token) token = `--custom-color-${category.colors.length + 1}`;
+      const color = {
+        id: makeId("color"),
+        name,
+        hex,
+        token,
+        role: String(form.get("role") || "").trim() || "自定义颜色"
+      };
+      category.colors.push(color);
+      saveCategories();
+      event.currentTarget.closest("dialog").close();
+      renderApp();
+      showToast(`已添加颜色 · ${color.name}`);
+    });
+
+    const colorPicker = document.getElementById("colorPicker");
+    const colorHexText = document.getElementById("colorHexText");
+    colorPicker.addEventListener("input", () => {
+      colorHexText.value = colorPicker.value.toUpperCase();
+      colorHexText.setCustomValidity("");
+    });
+    colorHexText.addEventListener("input", () => {
+      colorHexText.setCustomValidity("");
+      if (/^#[0-9A-F]{6}$/i.test(colorHexText.value)) {
+        colorPicker.value = colorHexText.value;
+      }
+    });
+
+    document.querySelectorAll("dialog").forEach(dialog => {
+      dialog.addEventListener("click", event => {
+        if (event.target === dialog) dialog.close();
+      });
+    });
+
+    document.getElementById("copyAll").addEventListener("click", () => {
+      const lines = [":root {"];
+      categories.flatMap(category => category.colors).forEach(color => {
+        lines.push(`  ${color.token}: ${color.hex};`);
+      });
+      lines.push("}");
+      if (lines.length === 2) {
+        showToast("暂无可复制的颜色");
+        return;
+      }
+      const total = categories.reduce((sum, category) => sum + category.colors.length, 0);
+      copyText(lines.join("\n"), `已复制全部 ${total} 个 CSS 变量`);
+    });
+
+    function observeSections() {
+      if (sectionObserver) sectionObserver.disconnect();
+      const sections = [...document.querySelectorAll(".section")];
+      sectionObserver = new IntersectionObserver(entries => {
+        const visible = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        document.querySelectorAll(".nav a").forEach(link => {
+          link.classList.toggle("active", link.getAttribute("href") === `#${visible.target.id}`);
+        });
+      }, { rootMargin: "-20% 0px -65% 0px", threshold: [0, .2, .6] });
+      sections.forEach(section => sectionObserver.observe(section));
+    }
+
+    renderApp();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2317 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>需求模板管理 · Flow 重设计</title>
+  <!--
+    设计假设：
+    1. 这是需求模板的 Flow 编辑页，主要用户是 SSC 产品、实施与研发人员。
+    2. 保留原页面的“开始节点—工单节点—结束节点、Owner、输入映射、发布校验”能力。
+    3. 节点、连接点、悬浮节点库与右侧配置面板参考 flow.sketch。
+    4. 色彩、字号、5px 间距、40px 控件和图标规则参考 Will-AI 组件规范。
+  -->
+  <style>
+    :root {
+      --background: #f7f8f6;
+      --foreground: #2f2f2f;
+      --surface: #ffffff;
+      --surface-foreground: #2f2f2f;
+      --overlay: #ffffff;
+      --overlay-foreground: #2f2f2f;
+      --accent: #0c9b72;
+      --accent-foreground: #ffffff;
+      --accent-soft: #e8f8f3;
+      --accent-soft-foreground: #087858;
+      --default: #f3f5f3;
+      --default-foreground: #4b514e;
+      --muted: #7b817e;
+      --muted-strong: #5f6662;
+      --border: #e5eae7;
+      --border-strong: #cfd8d3;
+      --field-background: #ffffff;
+      --field-foreground: #2f2f2f;
+      --field-placeholder: #aeb5b1;
+      --field-border: #dce3df;
+      --focus: #0c9b72;
+      --link: #087858;
+      --scrollbar: #cbd4cf;
+      --success: #0c9b72;
+      --success-foreground: #ffffff;
+      --success-soft: #e0f4ef;
+      --warning: #e07f33;
+      --warning-foreground: #ffffff;
+      --warning-soft: #fef0e5;
+      --danger: #d84b4b;
+      --danger-foreground: #ffffff;
+      --danger-soft: #fceaea;
+      --purple: #6558f5;
+      --purple-soft: #efedff;
+      --blue: #3d78df;
+      --blue-soft: #ebf2ff;
+      --orange: #d8792b;
+      --orange-soft: #fff1e5;
+      --shadow-card: 0 1px 0 rgba(28, 37, 32, 0.04), 0 5px 15px rgba(28, 37, 32, 0.07);
+      --shadow-float: 0 20px 50px rgba(25, 38, 31, 0.16);
+      --sidebar: #202723;
+      --sidebar-foreground: #edf2ef;
+      --sidebar-muted: #aab4af;
+      --canvas: #fafbfa;
+      --grid-dot: #dce2df;
+      --edge: #aebcb5;
+      --edge-active: #0c9b72;
+      --edge-running: #6558f5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    body {
+      background: var(--background);
+      color: var(--foreground);
+      font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    svg {
+      display: block;
+    }
+
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar) transparent;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      width: 100%;
+      height: 100%;
+      background: var(--background);
+    }
+
+    .sidebar {
+      display: grid;
+      grid-template-rows: 70px minmax(0, 1fr) auto;
+      min-width: 0;
+      color: var(--sidebar-foreground);
+      background: var(--sidebar);
+      border-right: 1px solid var(--sidebar);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 20px;
+      border-bottom: 1px solid color-mix(in oklch, var(--sidebar-foreground) 10%, transparent);
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      color: var(--accent-foreground);
+      background: var(--accent);
+      border-radius: 10px;
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .brand-copy span {
+      display: block;
+      margin-top: 5px;
+      color: var(--sidebar-muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .sidebar-nav {
+      min-height: 0;
+      overflow: auto;
+      padding: 15px 10px;
+    }
+
+    .nav-section + .nav-section {
+      margin-top: 25px;
+    }
+
+    .nav-section-title {
+      padding: 0 10px 10px;
+      color: var(--sidebar-muted);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      height: 40px;
+      margin: 0 0 5px;
+      padding: 0 10px;
+      color: var(--sidebar-muted);
+      background: transparent;
+      border: 0;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .nav-item:hover {
+      color: var(--sidebar-foreground);
+      background: color-mix(in oklch, var(--sidebar-foreground) 7%, transparent);
+    }
+
+    .nav-item.active {
+      color: var(--accent-foreground);
+      background: var(--accent);
+    }
+
+    .nav-item .icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .nav-item span {
+      flex: 1;
+      white-space: nowrap;
+    }
+
+    .nav-badge {
+      display: grid;
+      place-items: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      color: var(--sidebar);
+      background: var(--sidebar-foreground);
+      border-radius: 50%;
+      font-size: 10px;
+    }
+
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px;
+      padding: 10px;
+      background: color-mix(in oklch, var(--sidebar-foreground) 6%, transparent);
+      border: 1px solid color-mix(in oklch, var(--sidebar-foreground) 10%, transparent);
+      border-radius: 10px;
+    }
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      flex: none;
+      color: var(--accent-soft-foreground);
+      background: var(--accent-soft);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .profile-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .profile-copy strong,
+    .profile-copy span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .profile-copy strong {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .profile-copy span {
+      margin-top: 5px;
+      color: var(--sidebar-muted);
+      font-size: 10px;
+    }
+
+    .main-shell {
+      display: grid;
+      grid-template-rows: 60px minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      min-width: 0;
+      height: 60px;
+      padding: 0 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-title {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .breadcrumb strong {
+      color: var(--surface-foreground);
+      font-weight: 500;
+    }
+
+    .topbar-title h1 {
+      display: none;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+    }
+
+    .button,
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 40px;
+      padding: 0 15px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+    }
+
+    .button:active,
+    .icon-button:active {
+      transform: translateY(1px);
+    }
+
+    .button.primary {
+      color: var(--accent-foreground);
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .button.primary:hover {
+      background: color-mix(in oklch, var(--accent) 88%, black);
+    }
+
+    .button.secondary,
+    .icon-button {
+      color: var(--default-foreground);
+      background: var(--surface);
+      border-color: var(--border);
+    }
+
+    .button.secondary:hover,
+    .icon-button:hover {
+      color: var(--accent-soft-foreground);
+      background: var(--accent-soft);
+      border-color: color-mix(in oklch, var(--accent) 35%, var(--border));
+    }
+
+    .button.ghost {
+      color: var(--muted-strong);
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .button.ghost:hover {
+      color: var(--foreground);
+      background: var(--default);
+    }
+
+    .button.danger {
+      color: var(--danger);
+      background: var(--surface);
+      border-color: color-mix(in oklch, var(--danger) 25%, var(--border));
+    }
+
+    .button.mini {
+      height: 30px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .icon-button {
+      width: 40px;
+      padding: 0;
+    }
+
+    .icon-button.mini {
+      width: 30px;
+      height: 30px;
+    }
+
+    .button .icon,
+    .icon-button .icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+      padding: 20px;
+      gap: 15px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .page-title {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .page-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-title h2 {
+      margin: 0;
+      color: var(--foreground);
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+      text-wrap: balance;
+    }
+
+    .page-title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      padding: 0 10px;
+      color: var(--warning);
+      background: var(--warning-soft);
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .status-tag.success {
+      color: var(--accent-soft-foreground);
+      background: var(--success-soft);
+    }
+
+    .page-meta {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .page-meta span {
+      white-space: nowrap;
+    }
+
+    .editor {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .flow-section {
+      display: grid;
+      grid-template-rows: 50px minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .flow-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 15px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .flow-toolbar-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .flow-toolbar-title strong {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .flow-summary {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 5px;
+      border-left: 1px solid var(--border);
+    }
+
+    .toolbar-group:first-of-type {
+      border-left: 0;
+    }
+
+    .zoom-value {
+      min-width: 50px;
+      color: var(--muted-strong);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .canvas-viewport {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      background-color: var(--canvas);
+      background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+      background-size: 20px 20px;
+      user-select: none;
+    }
+
+    .canvas-scale-shell {
+      position: relative;
+      width: 1260px;
+      height: 760px;
+      transform-origin: 0 0;
+    }
+
+    .flow-edges {
+      position: absolute;
+      inset: 0;
+      width: 1260px;
+      height: 760px;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .flow-edge-path {
+      fill: none;
+      stroke: var(--edge);
+      stroke-width: 2;
+      transition: stroke 150ms ease;
+    }
+
+    .flow-edge-path.active {
+      stroke: var(--edge-active);
+    }
+
+    .edge-arrow {
+      fill: var(--edge);
+    }
+
+    .edge-label {
+      fill: var(--muted);
+      font-size: 10px;
+      pointer-events: none;
+    }
+
+    .edge-label-bg {
+      fill: var(--surface);
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+
+    body.is-running .flow-edge-path {
+      stroke: var(--edge-running);
+      stroke-dasharray: 8 5;
+      animation: edgeMove 700ms linear infinite;
+    }
+
+    @keyframes edgeMove {
+      to {
+        stroke-dashoffset: -26;
+      }
+    }
+
+    .flow-node {
+      position: absolute;
+      width: 240px;
+      min-height: 110px;
+      overflow: visible;
+      color: var(--surface-foreground);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-card);
+      cursor: grab;
+      transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+    }
+
+    .flow-node:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-float);
+    }
+
+    .flow-node.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-card);
+    }
+
+    .flow-node.dragging {
+      z-index: 8;
+      cursor: grabbing;
+      transition: none;
+    }
+
+    .flow-node.running {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 5px var(--purple-soft), var(--shadow-float);
+      transform: translateY(-3px);
+    }
+
+    .flow-node.boundary {
+      width: 180px;
+      min-height: 80px;
+    }
+
+    .node-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 45px;
+      padding: 10px 10px 5px;
+    }
+
+    .node-kind-icon {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      flex: none;
+      color: var(--accent-soft-foreground);
+      background: var(--accent-soft);
+      border-radius: 5px;
+    }
+
+    .node-kind-icon.purple {
+      color: var(--purple);
+      background: var(--purple-soft);
+    }
+
+    .node-kind-icon.blue {
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .node-kind-icon.orange {
+      color: var(--orange);
+      background: var(--orange-soft);
+    }
+
+    .node-kind-icon .icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .node-title {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .node-title strong,
+    .node-title span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .node-title strong {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .node-title span {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .node-menu {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .node-menu:hover {
+      color: var(--foreground);
+      background: var(--default);
+    }
+
+    .node-body {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      margin: 0 10px 10px;
+      padding-top: 5px;
+      border-top: 1px solid var(--border);
+    }
+
+    .node-body.boundary-body {
+      min-height: 20px;
+      padding-top: 10px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .node-label {
+      color: var(--muted);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .node-chip-list {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .data-chip {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding: 0 5px;
+      color: var(--purple);
+      background: var(--purple-soft);
+      border-radius: 5px;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .node-port {
+      position: absolute;
+      top: 50%;
+      display: grid;
+      place-items: center;
+      width: 14px;
+      height: 14px;
+      padding: 0;
+      color: var(--accent-foreground);
+      background: var(--accent);
+      border: 3px solid var(--surface);
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px var(--accent);
+      transform: translateY(-50%);
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .node-port.in {
+      left: -7px;
+      color: transparent;
+      background: var(--surface);
+      border-color: var(--surface);
+    }
+
+    .node-port.out {
+      right: -7px;
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .node-port.out:hover {
+      width: 20px;
+      height: 20px;
+      right: -10px;
+      box-shadow: 0 0 0 5px var(--accent-soft);
+    }
+
+    .canvas-bottom-tools {
+      position: sticky;
+      left: 15px;
+      bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      width: max-content;
+      padding: 5px;
+      color: var(--default-foreground);
+      background: var(--overlay);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-card);
+      z-index: 10;
+    }
+
+    .node-dock {
+      position: fixed;
+      left: calc(220px + (100vw - 580px) / 2);
+      bottom: 35px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px;
+      background: var(--overlay);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-float);
+      z-index: 20;
+    }
+
+    .node-palette {
+      position: absolute;
+      left: 50%;
+      bottom: 55px;
+      display: none;
+      width: 280px;
+      padding: 15px;
+      background: var(--overlay);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-float);
+      transform: translateX(-50%);
+    }
+
+    .node-palette.open {
+      display: block;
+      animation: paletteIn 160ms ease-out;
+    }
+
+    @keyframes paletteIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+      }
+    }
+
+    .palette-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .palette-title strong {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .palette-title span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .palette-section + .palette-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+
+    .palette-section-title {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .palette-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      height: 40px;
+      padding: 0 10px;
+      color: var(--default-foreground);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .palette-item:hover {
+      color: var(--accent-soft-foreground);
+      background: var(--accent-soft);
+      border-color: color-mix(in oklch, var(--accent) 25%, var(--border));
+    }
+
+    .palette-item .node-kind-icon {
+      width: 25px;
+      height: 25px;
+    }
+
+    .palette-item .icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .palette-item span {
+      overflow: hidden;
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .property-panel {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      min-width: 0;
+      min-height: 0;
+      background: var(--surface);
+    }
+
+    .property-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 65px;
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .property-head-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .property-head-copy span,
+    .property-head-copy strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .property-head-copy span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .property-head-copy strong {
+      margin-top: 5px;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .property-tabs {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      height: 45px;
+      padding: 0 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .property-tab {
+      position: relative;
+      height: 45px;
+      padding: 0;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .property-tab.active {
+      color: var(--accent-soft-foreground);
+      font-weight: 500;
+    }
+
+    .property-tab.active::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .property-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 0 15px 20px;
+    }
+
+    .panel-section {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-section:last-child {
+      border-bottom: 0;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .section-heading strong {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .section-heading span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .form-field {
+      display: block;
+    }
+
+    .form-field + .form-field {
+      margin-top: 15px;
+    }
+
+    .form-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 5px;
+      color: var(--muted-strong);
+      font-size: 12px;
+    }
+
+    .form-label i {
+      color: var(--danger);
+      font-style: normal;
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      color: var(--field-foreground);
+      background: var(--field-background);
+      border: 1px solid var(--field-border);
+      border-radius: 5px;
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .input,
+    .select {
+      height: 40px;
+      padding: 0 10px;
+    }
+
+    .textarea {
+      min-height: 80px;
+      padding: 10px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .input::placeholder,
+    .textarea::placeholder {
+      color: var(--field-placeholder);
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .helper {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .mapping-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mapping-card {
+      padding: 10px;
+      background: var(--default);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+
+    .mapping-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 25px minmax(0, 1fr);
+      align-items: center;
+      gap: 5px;
+    }
+
+    .mapping-source,
+    .mapping-target {
+      min-width: 0;
+    }
+
+    .mapping-source span,
+    .mapping-target span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .mapping-source strong,
+    .mapping-target strong {
+      display: block;
+      margin-top: 5px;
+      overflow: hidden;
+      font-size: 12px;
+      font-weight: 500;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mapping-arrow {
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .schema-list {
+      display: grid;
+      gap: 5px;
+    }
+
+    .schema-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 5px 10px;
+      background: var(--default);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+
+    .schema-copy {
+      min-width: 0;
+    }
+
+    .schema-copy strong,
+    .schema-copy span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .schema-copy strong {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .schema-copy span {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .property-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 60px;
+      padding: 10px 15px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .empty-panel {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      padding: 40px 20px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-panel .icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 15px;
+      color: var(--border-strong);
+    }
+
+    .empty-panel strong {
+      display: block;
+      color: var(--muted-strong);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .empty-panel span {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .toast-stack {
+      position: fixed;
+      top: 75px;
+      right: 20px;
+      display: grid;
+      gap: 10px;
+      z-index: 60;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 320px;
+      min-height: 50px;
+      padding: 10px 15px;
+      color: var(--surface-foreground);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-float);
+      animation: toastIn 180ms ease-out;
+    }
+
+    .toast.success {
+      border-color: color-mix(in oklch, var(--success) 30%, var(--border));
+    }
+
+    .toast.warning {
+      border-color: color-mix(in oklch, var(--warning) 35%, var(--border));
+    }
+
+    .toast .icon {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+    }
+
+    .toast.warning .icon {
+      color: var(--warning);
+    }
+
+    .toast-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .toast-copy strong,
+    .toast-copy span {
+      display: block;
+    }
+
+    .toast-copy strong {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .toast-copy span {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+
+    .dialog-layer {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: color-mix(in oklch, var(--sidebar) 45%, transparent);
+      z-index: 50;
+    }
+
+    .dialog-layer.open {
+      display: grid;
+    }
+
+    .dialog {
+      width: min(520px, 100%);
+      padding: 20px;
+      color: var(--overlay-foreground);
+      background: var(--overlay);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      box-shadow: var(--shadow-float);
+    }
+
+    .dialog-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .dialog-status-icon {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      flex: none;
+      color: var(--accent-soft-foreground);
+      background: var(--accent-soft);
+      border-radius: 10px;
+    }
+
+    .dialog-status-icon.warning {
+      color: var(--warning);
+      background: var(--warning-soft);
+    }
+
+    .dialog-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .dialog-copy h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .dialog-copy p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .check-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 5px 10px;
+      background: var(--default);
+      border-radius: 5px;
+    }
+
+    .check-item .icon {
+      width: 20px;
+      height: 20px;
+      color: var(--success);
+    }
+
+    .check-item.bad .icon {
+      color: var(--danger);
+    }
+
+    .check-item span {
+      font-size: 12px;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .preview-mode .property-panel {
+      display: none;
+    }
+
+    .preview-mode .editor {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .preview-mode .flow-section {
+      border-right: 0;
+    }
+
+    .preview-mode .node-dock {
+      display: none;
+    }
+
+    .preview-mode .flow-node {
+      cursor: default;
+    }
+
+    @media (max-width: 1180px) {
+      .app-shell {
+        grid-template-columns: 70px minmax(0, 1fr);
+      }
+
+      .brand {
+        justify-content: center;
+        padding: 15px;
+      }
+
+      .brand-copy,
+      .nav-section-title,
+      .nav-item span,
+      .nav-badge,
+      .profile-copy {
+        display: none;
+      }
+
+      .nav-item {
+        justify-content: center;
+      }
+
+      .sidebar-profile {
+        justify-content: center;
+      }
+
+      .editor {
+        grid-template-columns: minmax(0, 1fr) 320px;
+      }
+
+      .node-dock {
+        left: calc(70px + (100vw - 390px) / 2);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .workspace {
+        padding: 15px;
+      }
+
+      .page-meta {
+        display: none;
+      }
+
+      .editor {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .property-panel {
+        position: fixed;
+        top: 60px;
+        right: 0;
+        bottom: 0;
+        width: min(360px, 90vw);
+        border-left: 1px solid var(--border);
+        box-shadow: var(--shadow-float);
+        z-index: 30;
+      }
+
+      .property-panel.no-selection {
+        display: none;
+      }
+
+      .flow-section {
+        border-right: 0;
+      }
+
+      .topbar-actions .button.secondary {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" id="brandIcon"></div>
+        <div class="brand-copy">
+          <strong>SSC 智能服务台</strong>
+          <span>Smart Service Center</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <section class="nav-section">
+          <div class="nav-section-title">工作台</div>
+          <button class="nav-item" type="button" data-nav="overview"><span class="nav-icon" data-icon="dashboard"></span><span>总览</span></button>
+          <button class="nav-item" type="button" data-nav="demands"><span class="nav-icon" data-icon="inbox"></span><span>需求中心</span><b class="nav-badge">6</b></button>
+          <button class="nav-item" type="button" data-nav="tickets"><span class="nav-icon" data-icon="ticket"></span><span>工单中心</span></button>
+        </section>
+        <section class="nav-section">
+          <div class="nav-section-title">配置中心</div>
+          <button class="nav-item active" type="button" data-nav="templates"><span class="nav-icon" data-icon="template"></span><span>需求模板</span></button>
+          <button class="nav-item" type="button" data-nav="ticketTemplates"><span class="nav-icon" data-icon="layers"></span><span>工单模板</span></button>
+          <button class="nav-item" type="button" data-nav="rules"><span class="nav-icon" data-icon="branch"></span><span>规则模板</span></button>
+        </section>
+        <section class="nav-section">
+          <div class="nav-section-title">系统</div>
+          <button class="nav-item" type="button" data-nav="users"><span class="nav-icon" data-icon="users"></span><span>组织与成员</span></button>
+          <button class="nav-item" type="button" data-nav="settings"><span class="nav-icon" data-icon="settings"></span><span>系统设置</span></button>
+        </section>
+      </nav>
+
+      <div class="sidebar-profile">
+        <div class="avatar">蔡</div>
+        <div class="profile-copy">
+          <strong>蔡晓雯</strong>
+          <span>产品设计 · 管理员</span>
+        </div>
+        <span data-icon="more"></span>
+      </div>
+    </aside>
+
+    <main class="main-shell">
+      <header class="topbar">
+        <div class="topbar-title">
+          <div class="breadcrumb"><span>配置中心</span><span>/</span><span>需求模板</span><span>/</span><strong>Flow 配置</strong></div>
+          <h1>需求模板 Flow 配置</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" type="button" aria-label="帮助" data-demo-action="help"><span data-icon="help"></span></button>
+          <div class="divider"></div>
+          <button class="button secondary" type="button" id="previewButton"><span data-icon="eye"></span><span>预览</span></button>
+          <button class="button secondary" type="button" id="saveButton"><span data-icon="save"></span><span>保存草稿</span></button>
+          <button class="button primary" type="button" id="publishButton"><span data-icon="publish"></span><span>发布校验</span></button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <section class="page-header">
+          <div class="page-title">
+            <div class="page-title-row">
+              <h2>Offer 发放需求模板</h2>
+              <span class="status-tag">草稿</span>
+            </div>
+            <p>配置需求创建后需要生成的工单，以及工单之间的数据与触发关系。</p>
+          </div>
+          <div class="page-meta">
+            <span>模板 ID：DT-00018</span>
+            <span>最后保存：今天 16:24</span>
+            <span>编辑人：蔡晓雯</span>
+          </div>
+        </section>
+
+        <section class="editor" id="editor">
+          <div class="flow-section">
+            <div class="flow-toolbar">
+              <div class="flow-toolbar-title">
+                <strong>需求 Flow</strong>
+                <span class="flow-summary" id="flowSummary">4 个工单 · 1 个结束节点</span>
+              </div>
+              <div class="toolbar-group">
+                <button class="icon-button mini" type="button" aria-label="撤销" data-demo-action="undo"><span data-icon="undo"></span></button>
+                <button class="icon-button mini" type="button" aria-label="重做" data-demo-action="redo"><span data-icon="redo"></span></button>
+              </div>
+              <div class="toolbar-group">
+                <button class="icon-button mini" type="button" aria-label="缩小" id="zoomOut"><span data-icon="minus"></span></button>
+                <span class="zoom-value" id="zoomValue">100%</span>
+                <button class="icon-button mini" type="button" aria-label="放大" id="zoomIn"><span data-icon="plus"></span></button>
+                <button class="icon-button mini" type="button" aria-label="适应画布" id="fitCanvas"><span data-icon="fit"></span></button>
+              </div>
+              <button class="button ghost mini" type="button" id="autoLayout"><span data-icon="layout"></span><span>整理画布</span></button>
+            </div>
+
+            <div class="canvas-viewport" id="canvasViewport">
+              <div class="canvas-scale-shell" id="canvasScaleShell">
+                <svg class="flow-edges" id="edgeLayer" viewBox="0 0 1260 760" aria-hidden="true">
+                  <defs>
+                    <marker id="edgeArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                      <path class="edge-arrow" d="M0,0 L10,5 L0,10 z"></path>
+                    </marker>
+                  </defs>
+                  <g id="edgePaths"></g>
+                </svg>
+                <div id="nodeLayer"></div>
+              </div>
+
+              <div class="canvas-bottom-tools">
+                <button class="icon-button mini" type="button" aria-label="定位开始节点" id="locateStart"><span data-icon="target"></span></button>
+                <button class="icon-button mini" type="button" aria-label="显示网格" id="toggleGrid"><span data-icon="grid"></span></button>
+              </div>
+            </div>
+          </div>
+
+          <aside class="property-panel" id="propertyPanel"></aside>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="node-dock">
+    <div class="node-palette" id="nodePalette">
+      <div class="palette-title">
+        <strong>添加节点</strong>
+        <span id="paletteHint">添加到画布</span>
+      </div>
+      <section class="palette-section">
+        <div class="palette-section-title">基础节点</div>
+        <div class="palette-grid">
+          <button class="palette-item" type="button" data-add-kind="human"><i class="node-kind-icon blue"><span data-icon="userCheck"></span></i><span>人工工单</span></button>
+          <button class="palette-item" type="button" data-add-kind="approval"><i class="node-kind-icon orange"><span data-icon="approval"></span></i><span>审批工单</span></button>
+          <button class="palette-item" type="button" data-add-kind="system"><i class="node-kind-icon purple"><span data-icon="network"></span></i><span>执行工单</span></button>
+          <button class="palette-item" type="button" data-add-kind="end"><i class="node-kind-icon"><span data-icon="end"></span></i><span>结束节点</span></button>
+        </div>
+      </section>
+      <section class="palette-section">
+        <div class="palette-section-title">智能节点</div>
+        <div class="palette-grid">
+          <button class="palette-item" type="button" data-add-kind="agent"><i class="node-kind-icon"><span data-icon="agent"></span></i><span>Agent 工单</span></button>
+          <button class="palette-item" type="button" data-add-kind="search"><i class="node-kind-icon"><span data-icon="search"></span></i><span>智能检索</span></button>
+        </div>
+      </section>
+    </div>
+    <button class="button primary" type="button" id="addNodeButton"><span data-icon="plus"></span><span>添加节点</span></button>
+    <button class="button secondary" type="button" id="runFlowButton"><span data-icon="play"></span><span>试运行</span></button>
+  </div>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <div class="dialog-layer" id="dialogLayer" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+    <section class="dialog">
+      <div class="dialog-head">
+        <div class="dialog-status-icon" id="dialogIcon"></div>
+        <div class="dialog-copy">
+          <h3 id="dialogTitle">发布校验</h3>
+          <p id="dialogDescription"></p>
+        </div>
+      </div>
+      <div class="check-list" id="checkList"></div>
+      <div class="dialog-actions">
+        <button class="button secondary" type="button" id="dialogCancel">返回修改</button>
+        <button class="button primary" type="button" id="dialogConfirm">发布模板</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const icons = {
+      logo: '<svg class="icon" viewBox="0 0 30 30"><circle cx="9" cy="9" r="4"></circle><circle cx="21" cy="9" r="4"></circle><circle cx="9" cy="21" r="4"></circle><circle cx="21" cy="21" r="4"></circle><path d="M12 9h5M9 13v4M21 13v4M12 21h5"></path></svg>',
+      dashboard: '<svg class="icon" viewBox="0 0 30 30"><rect x="4" y="4" width="9" height="9" rx="2"></rect><rect x="17" y="4" width="9" height="6" rx="2"></rect><rect x="4" y="17" width="9" height="9" rx="2"></rect><rect x="17" y="14" width="9" height="12" rx="2"></rect></svg>',
+      inbox: '<svg class="icon" viewBox="0 0 30 30"><path d="M5 7h20v17H5z"></path><path d="M5 18h6l2 3h4l2-3h6M10 11h10"></path></svg>',
+      ticket: '<svg class="icon" viewBox="0 0 30 30"><path d="M5 8h20v5a3 3 0 0 0 0 6v5H5v-5a3 3 0 0 0 0-6V8z"></path><path d="M15 10v2M15 16v2M15 22v1"></path></svg>',
+      template: '<svg class="icon" viewBox="0 0 30 30"><rect x="5" y="4" width="20" height="22" rx="2"></rect><path d="M10 10h10M10 15h10M10 20h6"></path></svg>',
+      layers: '<svg class="icon" viewBox="0 0 30 30"><path d="M15 4 26 10 15 16 4 10 15 4z"></path><path d="m4 15 11 6 11-6M4 20l11 6 11-6"></path></svg>',
+      branch: '<svg class="icon" viewBox="0 0 30 30"><circle cx="8" cy="7" r="3"></circle><circle cx="22" cy="9" r="3"></circle><circle cx="22" cy="23" r="3"></circle><path d="M8 10v5c0 4 3 8 8 8h3M11 7h3c4 0 8 2 8 6v7"></path></svg>',
+      users: '<svg class="icon" viewBox="0 0 30 30"><circle cx="11" cy="10" r="4"></circle><path d="M4 25c0-5 3-8 7-8s7 3 7 8"></path><circle cx="21" cy="11" r="3"></circle><path d="M19 18c4-1 7 2 7 6"></path></svg>',
+      settings: '<svg class="icon" viewBox="0 0 30 30"><circle cx="15" cy="15" r="4"></circle><path d="M24 17l2 2-3 5-3-1-2 2v3h-6v-3l-2-2-3 1-3-5 2-2v-4l-2-2 3-5 3 1 2-2V2h6v3l2 2 3-1 3 5-2 2v4z"></path></svg>',
+      more: '<svg class="icon" viewBox="0 0 30 30"><circle cx="7" cy="15" r="1"></circle><circle cx="15" cy="15" r="1"></circle><circle cx="23" cy="15" r="1"></circle></svg>',
+      help: '<svg class="icon" viewBox="0 0 30 30"><circle cx="15" cy="15" r="11"></circle><path d="M12 11a3 3 0 1 1 4 3c-1 1-1 2-1 3M15 22h.01"></path></svg>',
+      eye: '<svg class="icon" viewBox="0 0 30 30"><path d="M3 15s4-8 12-8 12 8 12 8-4 8-12 8S3 15 3 15z"></path><circle cx="15" cy="15" r="3"></circle></svg>',
+      save: '<svg class="icon" viewBox="0 0 30 30"><path d="M5 5h17l3 3v17H5V5z"></path><path d="M10 5v7h10V5M10 25v-8h10v8"></path></svg>',
+      publish: '<svg class="icon" viewBox="0 0 30 30"><path d="M15 22V5M9 11l6-6 6 6"></path><path d="M6 19v6h18v-6"></path></svg>',
+      undo: '<svg class="icon" viewBox="0 0 30 30"><path d="m10 8-5 5 5 5"></path><path d="M6 13h11a7 7 0 0 1 7 7v2"></path></svg>',
+      redo: '<svg class="icon" viewBox="0 0 30 30"><path d="m20 8 5 5-5 5"></path><path d="M24 13H13a7 7 0 0 0-7 7v2"></path></svg>',
+      minus: '<svg class="icon" viewBox="0 0 30 30"><path d="M7 15h16"></path></svg>',
+      plus: '<svg class="icon" viewBox="0 0 30 30"><path d="M15 7v16M7 15h16"></path></svg>',
+      fit: '<svg class="icon" viewBox="0 0 30 30"><path d="M5 12V5h7M18 5h7v7M25 18v7h-7M12 25H5v-7"></path></svg>',
+      layout: '<svg class="icon" viewBox="0 0 30 30"><rect x="4" y="5" width="8" height="7" rx="1"></rect><rect x="18" y="5" width="8" height="7" rx="1"></rect><rect x="11" y="19" width="8" height="7" rx="1"></rect><path d="M8 12v3h14v-3M15 15v4"></path></svg>',
+      target: '<svg class="icon" viewBox="0 0 30 30"><circle cx="15" cy="15" r="10"></circle><circle cx="15" cy="15" r="4"></circle><path d="M15 2v4M15 24v4M2 15h4M24 15h4"></path></svg>',
+      grid: '<svg class="icon" viewBox="0 0 30 30"><path d="M5 5h5v5H5zM13 5h5v5h-5zM21 5h4v5h-4zM5 13h5v5H5zM13 13h5v5h-5zM21 13h4v5h-4zM5 21h5v4H5zM13 21h5v4h-5zM21 21h4v4h-4z"></path></svg>',
+      start: '<svg class="icon" viewBox="0 0 30 30"><path d="M8 7h9a7 7 0 0 1 0 14H9"></path><path d="m12 16-5 5 5 5"></path></svg>',
+      end: '<svg class="icon" viewBox="0 0 30 30"><rect x="5" y="5" width="20" height="20" rx="3"></rect><path d="M10 15h10"></path></svg>',
+      userCheck: '<svg class="icon" viewBox="0 0 30 30"><circle cx="12" cy="10" r="4"></circle><path d="M5 25c0-5 3-8 7-8 2 0 4 1 5 2"></path><path d="m19 23 2 2 5-6"></path></svg>',
+      approval: '<svg class="icon" viewBox="0 0 30 30"><path d="M6 5h18v20H6z"></path><path d="M10 10h10M10 15h7M10 20h5"></path><path d="m19 21 2 2 4-5"></path></svg>',
+      network: '<svg class="icon" viewBox="0 0 30 30"><circle cx="7" cy="15" r="3"></circle><circle cx="23" cy="7" r="3"></circle><circle cx="23" cy="23" r="3"></circle><path d="m10 14 10-6M10 16l10 6"></path></svg>',
+      agent: '<svg class="icon" viewBox="0 0 30 30"><rect x="5" y="8" width="20" height="16" rx="3"></rect><path d="M15 8V4M11 16h.01M19 16h.01M11 21h8"></path></svg>',
+      search: '<svg class="icon" viewBox="0 0 30 30"><circle cx="13" cy="13" r="8"></circle><path d="m19 19 6 6"></path><path d="M10 13h6M13 10v6"></path></svg>',
+      play: '<svg class="icon" viewBox="0 0 30 30"><path d="m10 6 14 9-14 9V6z"></path></svg>',
+      close: '<svg class="icon" viewBox="0 0 30 30"><path d="M7 7l16 16M23 7 7 23"></path></svg>',
+      trash: '<svg class="icon" viewBox="0 0 30 30"><path d="M6 8h18M11 8V5h8v3M9 8l1 17h10l1-17M13 12v9M17 12v9"></path></svg>',
+      chevron: '<svg class="icon" viewBox="0 0 30 30"><path d="m11 7 8 8-8 8"></path></svg>',
+      check: '<svg class="icon" viewBox="0 0 30 30"><circle cx="15" cy="15" r="11"></circle><path d="m9 15 4 4 8-9"></path></svg>',
+      alert: '<svg class="icon" viewBox="0 0 30 30"><path d="M15 4 27 25H3L15 4z"></path><path d="M15 11v6M15 21h.01"></path></svg>'
+    };
+
+    const nodeCatalog = {
+      human: { title: "人工工单", type: "人工处理", icon: "userCheck", tone: "blue", description: "由指定处理组完成信息核对", outputs: ["处理结果", "处理意见"] },
+      approval: { title: "审批工单", type: "审批类", icon: "approval", tone: "orange", description: "按审批流完成业务确认", outputs: ["审批结果", "审批意见"] },
+      system: { title: "执行工单", type: "执行类", icon: "network", tone: "purple", description: "调用系统能力完成自动处理", outputs: ["执行状态", "返回数据"] },
+      agent: { title: "Agent 工单", type: "智能处理", icon: "agent", tone: "", description: "由智能 Agent 分析并执行任务", outputs: ["分析结果", "置信度"] },
+      search: { title: "智能检索", type: "智能处理", icon: "search", tone: "", description: "检索知识库并返回匹配内容", outputs: ["检索结果", "引用来源"] },
+      end: { title: "需求结束", type: "结束节点", icon: "end", tone: "", description: "汇总流程输出并结束需求", outputs: [] }
+    };
+
+    const state = {
+      scale: 1,
+      selectedId: "review",
+      activeTab: "config",
+      paletteOpen: false,
+      pendingSourceId: "",
+      preview: false,
+      running: false,
+      nodes: [
+        { id: "start", kind: "start", title: "需求创建", type: "开始节点", icon: "start", tone: "", x: 60, y: 300, description: "由调用方创建需求实例", owner: "调用方", inputs: ["候选人信息", "Offer 信息"], outputs: ["需求数据"] },
+        { id: "review", kind: "human", title: "信息采集审核", type: "人工处理", icon: "userCheck", tone: "blue", x: 320, y: 170, description: "核对候选人、岗位和薪资信息", owner: "Offer SSC 处理组", inputs: ["需求数据"], outputs: ["审核结果", "审核意见"] },
+        { id: "filing", kind: "approval", title: "客户报备", type: "审批类", icon: "approval", tone: "orange", x: 650, y: 80, description: "审核驳回时发起客户报备", owner: "上海 HRBP 处理组", inputs: ["审核结果", "候选人信息"], outputs: ["报备状态", "报备编号"] },
+        { id: "send", kind: "system", title: "发送 Offer 通知", type: "执行类", icon: "network", tone: "purple", x: 650, y: 360, description: "调用消息能力发送 Offer 通知", owner: "消息中心服务", inputs: ["候选人信息", "Offer 信息"], outputs: ["发送状态", "消息 ID"] },
+        { id: "archive", kind: "agent", title: "材料归档", type: "智能处理", icon: "agent", tone: "", x: 940, y: 220, description: "识别并归档本次需求相关材料", owner: "HR 档案 Agent", inputs: ["报备编号", "消息 ID"], outputs: ["归档结果"] },
+        { id: "end", kind: "end", title: "需求结束", type: "结束节点", icon: "end", tone: "", x: 1070, y: 500, description: "输出本次需求的最终状态", owner: "系统", inputs: ["归档结果"], outputs: [] }
+      ],
+      edges: [
+        { id: "e1", source: "start", target: "review", label: "需求创建" },
+        { id: "e2", source: "review", target: "filing", label: "审核驳回" },
+        { id: "e3", source: "review", target: "send", label: "审核通过" },
+        { id: "e4", source: "filing", target: "archive", label: "报备完成" },
+        { id: "e5", source: "send", target: "archive", label: "发送完成" },
+        { id: "e6", source: "archive", target: "end", label: "归档成功" }
+      ]
+    };
+
+    const nodeLayer = document.getElementById("nodeLayer");
+    const edgePaths = document.getElementById("edgePaths");
+    const propertyPanel = document.getElementById("propertyPanel");
+    const canvasViewport = document.getElementById("canvasViewport");
+    const canvasScaleShell = document.getElementById("canvasScaleShell");
+    const nodePalette = document.getElementById("nodePalette");
+    const editor = document.getElementById("editor");
+
+    function icon(name) {
+      return icons[name] || icons.template;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function hydrateIcons(root = document) {
+      root.querySelectorAll("[data-icon]").forEach((element) => {
+        element.innerHTML = icon(element.dataset.icon);
+      });
+    }
+
+    function nodeSize(node) {
+      return node.kind === "start" || node.kind === "end"
+        ? { width: 180, height: 80 }
+        : { width: 240, height: 110 };
+    }
+
+    function renderNodes() {
+      nodeLayer.innerHTML = state.nodes.map((node) => {
+        const boundary = node.kind === "start" || node.kind === "end";
+        const selected = node.id === state.selectedId;
+        const running = node.running;
+        const chips = (node.outputs || []).slice(0, 2).map((item) => `<span class="data-chip">${escapeHtml(item)}</span>`).join("");
+        const body = boundary
+          ? `<div class="node-body boundary-body"><span>${escapeHtml(node.description)}</span></div>`
+          : `<div class="node-body"><span class="node-label">输出</span><div class="node-chip-list">${chips || '<span class="data-chip">暂无</span>'}</div></div>`;
+        return `
+          <article class="flow-node ${boundary ? "boundary" : ""} ${selected ? "selected" : ""} ${running ? "running" : ""}"
+            data-node-id="${escapeHtml(node.id)}"
+            style="left:${node.x}px;top:${node.y}px"
+            tabindex="0"
+            aria-label="${escapeHtml(node.title)}">
+            ${node.kind === "start" ? "" : '<button class="node-port in" type="button" aria-label="输入连接点"></button>'}
+            <div class="node-head">
+              <div class="node-kind-icon ${escapeHtml(node.tone)}">${icon(node.icon)}</div>
+              <div class="node-title">
+                <strong>${escapeHtml(node.title)}</strong>
+                <span>${escapeHtml(node.type)} · ${escapeHtml(node.owner)}</span>
+              </div>
+              <button class="node-menu" type="button" aria-label="更多操作">${icon("more")}</button>
+            </div>
+            ${body}
+            ${node.kind === "end" ? "" : '<button class="node-port out" type="button" aria-label="从这里添加节点">+</button>'}
+          </article>`;
+      }).join("");
+      bindNodeEvents();
+    }
+
+    function edgeGeometry(edge) {
+      const source = state.nodes.find((node) => node.id === edge.source);
+      const target = state.nodes.find((node) => node.id === edge.target);
+      if (!source || !target) return null;
+      const sourceSize = nodeSize(source);
+      const targetSize = nodeSize(target);
+      const sx = source.x + sourceSize.width;
+      const sy = source.y + sourceSize.height / 2;
+      const tx = target.x;
+      const ty = target.y + targetSize.height / 2;
+      const bend = Math.max(70, Math.abs(tx - sx) * 0.45);
+      const path = `M ${sx} ${sy} C ${sx + bend} ${sy}, ${tx - bend} ${ty}, ${tx} ${ty}`;
+      return { path, labelX: (sx + tx) / 2, labelY: (sy + ty) / 2 - 10 };
+    }
+
+    function renderEdges() {
+      edgePaths.innerHTML = state.edges.map((edge) => {
+        const geometry = edgeGeometry(edge);
+        if (!geometry) return "";
+        const active = edge.source === state.selectedId || edge.target === state.selectedId;
+        const labelWidth = Math.max(60, edge.label.length * 12 + 20);
+        return `
+          <g>
+            <path class="flow-edge-path ${active ? "active" : ""}" d="${geometry.path}" marker-end="url(#edgeArrow)"></path>
+            <rect class="edge-label-bg" x="${geometry.labelX - labelWidth / 2}" y="${geometry.labelY - 10}" width="${labelWidth}" height="20" rx="5"></rect>
+            <text class="edge-label" x="${geometry.labelX}" y="${geometry.labelY + 4}" text-anchor="middle">${escapeHtml(edge.label)}</text>
+          </g>`;
+      }).join("");
+    }
+
+    function renderPropertyPanel() {
+      const node = state.nodes.find((item) => item.id === state.selectedId);
+      propertyPanel.classList.toggle("no-selection", !node);
+      if (!node) {
+        propertyPanel.innerHTML = `
+          <div class="empty-panel" style="grid-row:1/-1">
+            <div>
+              ${icon("target")}
+              <strong>选择一个节点</strong>
+              <span>查看并配置节点属性</span>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const tabs = node.kind === "start" || node.kind === "end"
+        ? [{ id: "config", label: "节点配置" }, { id: "input", label: "输入" }]
+        : [{ id: "config", label: "基础配置" }, { id: "input", label: "输入映射" }, { id: "output", label: "输出" }];
+      if (!tabs.some((tab) => tab.id === state.activeTab)) state.activeTab = "config";
+
+      propertyPanel.innerHTML = `
+        <header class="property-head">
+          <div class="node-kind-icon ${escapeHtml(node.tone)}">${icon(node.icon)}</div>
+          <div class="property-head-copy">
+            <span>${escapeHtml(node.type)}</span>
+            <strong>${escapeHtml(node.title)}</strong>
+          </div>
+          <button class="icon-button mini" type="button" id="closeProperty" aria-label="关闭配置面板">${icon("close")}</button>
+        </header>
+        <nav class="property-tabs">
+          ${tabs.map((tab) => `<button class="property-tab ${state.activeTab === tab.id ? "active" : ""}" type="button" data-panel-tab="${tab.id}">${tab.label}</button>`).join("")}
+        </nav>
+        <div class="property-body">${renderPanelBody(node)}</div>
+        <footer class="property-footer">
+          ${node.kind === "start" ? "<span></span>" : `<button class="button danger mini" type="button" id="deleteNode">${icon("trash")}<span>删除节点</span></button>`}
+          <button class="button primary mini" type="button" id="applyNode">应用配置</button>
+        </footer>`;
+
+      bindPropertyEvents(node);
+    }
+
+    function renderPanelBody(node) {
+      if (state.activeTab === "input") return renderInputPanel(node);
+      if (state.activeTab === "output") return renderOutputPanel(node);
+      return renderConfigPanel(node);
+    }
+
+    function renderConfigPanel(node) {
+      const ownerOptions = ["Offer SSC 处理组", "上海 HRBP 处理组", "消息中心服务", "HR 档案 Agent", "系统", "调用方"];
+      const ownerSelect = node.kind === "start"
+        ? `<div class="schema-row"><div class="schema-copy"><strong>调用方</strong><span>需求实例创建时提供输入参数</span></div><span class="status-tag success">系统预设</span></div>`
+        : `<label class="form-field"><span class="form-label"><span>Owner <i>*</i></span></span><select class="select" id="nodeOwner">${ownerOptions.map((owner) => `<option ${node.owner === owner ? "selected" : ""}>${owner}</option>`).join("")}</select><p class="helper">决定工单创建后由谁接收与处理。</p></label>`;
+      return `
+        <section class="panel-section">
+          <div class="section-heading"><strong>节点信息</strong><span>NODE</span></div>
+          <label class="form-field">
+            <span class="form-label"><span>节点名称 <i>*</i></span><span>${node.title.length}/20</span></span>
+            <input class="input" id="nodeTitle" value="${escapeHtml(node.title)}" maxlength="20" />
+          </label>
+          <label class="form-field">
+            <span class="form-label">节点说明</span>
+            <textarea class="textarea" id="nodeDescription" placeholder="说明节点在流程中的作用">${escapeHtml(node.description)}</textarea>
+          </label>
+        </section>
+        <section class="panel-section">
+          <div class="section-heading"><strong>处理配置</strong><span>OWNER</span></div>
+          ${ownerSelect}
+        </section>
+        <section class="panel-section">
+          <div class="section-heading"><strong>创建条件</strong><span>TRIGGER</span></div>
+          <label class="form-field">
+            <span class="form-label">触发方式</span>
+            <select class="select" id="nodeTrigger">
+              <option>${node.kind === "start" ? "调用方创建" : "监听前置节点结果"}</option>
+              ${node.kind === "start" ? "" : "<option>需求创建时立即触发</option>"}
+            </select>
+          </label>
+        </section>`;
+    }
+
+    function renderInputPanel(node) {
+      if (!node.inputs?.length) {
+        return `<section class="panel-section"><div class="section-heading"><strong>输入参数</strong><button class="button ghost mini" type="button">新增输入</button></div><div class="empty-panel"><div><strong>暂无输入参数</strong><span>点击新增输入开始配置</span></div></div></section>`;
+      }
+      return `
+        <section class="panel-section">
+          <div class="section-heading"><strong>输入映射</strong><span>${node.inputs.length} 项</span></div>
+          <p class="helper" style="margin-bottom:15px">将前置节点的输出映射到当前节点输入。</p>
+          <div class="mapping-list">
+            ${node.inputs.map((input, index) => {
+              const incoming = state.edges.find((edge) => edge.target === node.id);
+              const source = state.nodes.find((item) => item.id === incoming?.source);
+              return `
+                <article class="mapping-card">
+                  <div class="mapping-row">
+                    <div class="mapping-source"><span>来源</span><strong>${escapeHtml(source?.title || "调用方")}</strong></div>
+                    <span class="mapping-arrow">→</span>
+                    <div class="mapping-target"><span>当前输入</span><strong>${escapeHtml(input)}</strong></div>
+                  </div>
+                  <label class="form-field" style="margin-top:10px">
+                    <span class="form-label">来源字段</span>
+                    <select class="select">
+                      <option>${escapeHtml(source?.outputs?.[index] || source?.outputs?.[0] || "需求数据")}</option>
+                      ${(source?.outputs || []).slice(1).map((output) => `<option>${escapeHtml(output)}</option>`).join("")}
+                    </select>
+                  </label>
+                </article>`;
+            }).join("")}
+          </div>
+        </section>`;
+    }
+
+    function renderOutputPanel(node) {
+      return `
+        <section class="panel-section">
+          <div class="section-heading"><strong>输出参数</strong><button class="button ghost mini" type="button" data-demo-action="addOutput">新增输出</button></div>
+          <div class="schema-list">
+            ${(node.outputs || []).map((output, index) => `
+              <article class="schema-row">
+                <div class="schema-copy"><strong>${escapeHtml(output)}</strong><span>${escapeHtml(output.toLowerCase().replaceAll(" ", "_"))} · STRING</span></div>
+                <button class="icon-button mini" type="button" aria-label="编辑输出">${icon("more")}</button>
+              </article>`).join("") || '<div class="empty-panel"><div><strong>暂无输出参数</strong><span>结束节点不再输出数据</span></div></div>'}
+          </div>
+        </section>
+        <section class="panel-section">
+          <div class="section-heading"><strong>输出说明</strong><span>SCHEMA</span></div>
+          <p class="helper">输出参数可被后续节点引用。删除或修改标识前，请确认没有下游节点正在使用。</p>
+        </section>`;
+    }
+
+    function bindNodeEvents() {
+      document.querySelectorAll(".flow-node").forEach((element) => {
+        const id = element.dataset.nodeId;
+        element.addEventListener("click", (event) => {
+          if (event.target.closest(".node-port.out")) {
+            event.stopPropagation();
+            openPalette(id);
+            return;
+          }
+          if (event.target.closest(".node-menu")) {
+            event.stopPropagation();
+            selectNode(id);
+            showToast("节点操作", "可在右侧面板编辑或删除当前节点。");
+            return;
+          }
+          selectNode(id);
+        });
+        element.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") selectNode(id);
+        });
+        element.addEventListener("mousedown", (event) => {
+          if (state.preview || event.button !== 0 || event.target.closest("button")) return;
+          const node = state.nodes.find((item) => item.id === id);
+          if (!node) return;
+          selectNode(id);
+          const startX = event.clientX;
+          const startY = event.clientY;
+          const originX = node.x;
+          const originY = node.y;
+          element.classList.add("dragging");
+
+          function onMove(moveEvent) {
+            node.x = Math.max(20, originX + (moveEvent.clientX - startX) / state.scale);
+            node.y = Math.max(20, originY + (moveEvent.clientY - startY) / state.scale);
+            element.style.left = `${node.x}px`;
+            element.style.top = `${node.y}px`;
+            renderEdges();
+          }
+
+          function onUp() {
+            element.classList.remove("dragging");
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+          }
+
+          window.addEventListener("mousemove", onMove);
+          window.addEventListener("mouseup", onUp);
+        });
+      });
+    }
+
+    function bindPropertyEvents(node) {
+      document.querySelectorAll("[data-panel-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.activeTab = button.dataset.panelTab;
+          renderPropertyPanel();
+        });
+      });
+
+      document.getElementById("closeProperty")?.addEventListener("click", () => {
+        state.selectedId = "";
+        renderAll();
+      });
+
+      document.getElementById("applyNode")?.addEventListener("click", () => {
+        const title = document.getElementById("nodeTitle");
+        const description = document.getElementById("nodeDescription");
+        const owner = document.getElementById("nodeOwner");
+        if (title) node.title = title.value.trim() || node.title;
+        if (description) node.description = description.value.trim();
+        if (owner) node.owner = owner.value;
+        renderAll();
+        showToast("配置已应用", `${node.title} 的节点配置已更新。`, "success");
+      });
+
+      document.getElementById("deleteNode")?.addEventListener("click", () => {
+        if (node.kind === "start") return;
+        state.nodes = state.nodes.filter((item) => item.id !== node.id);
+        state.edges = state.edges.filter((edge) => edge.source !== node.id && edge.target !== node.id);
+        state.selectedId = "";
+        renderAll();
+        showToast("节点已删除", "相关连线已同步移除。", "warning");
+      });
+    }
+
+    function selectNode(id) {
+      state.selectedId = id;
+      state.activeTab = "config";
+      renderAll();
+    }
+
+    function renderAll() {
+      renderNodes();
+      renderEdges();
+      renderPropertyPanel();
+      updateSummary();
+      applyScale();
+    }
+
+    function updateSummary() {
+      const tickets = state.nodes.filter((node) => !["start", "end"].includes(node.kind)).length;
+      const ends = state.nodes.filter((node) => node.kind === "end").length;
+      document.getElementById("flowSummary").textContent = `${tickets} 个工单 · ${ends} 个结束节点`;
+    }
+
+    function applyScale() {
+      canvasScaleShell.style.transform = `scale(${state.scale})`;
+      document.getElementById("zoomValue").textContent = `${Math.round(state.scale * 100)}%`;
+    }
+
+    function setScale(nextScale) {
+      state.scale = Math.min(1.4, Math.max(0.6, Math.round(nextScale * 10) / 10));
+      applyScale();
+    }
+
+    function openPalette(sourceId = "") {
+      state.pendingSourceId = sourceId;
+      state.paletteOpen = true;
+      nodePalette.classList.add("open");
+      document.getElementById("paletteHint").textContent = sourceId
+        ? `连接到 ${state.nodes.find((node) => node.id === sourceId)?.title || "当前节点"}`
+        : "添加到画布";
+    }
+
+    function closePalette() {
+      state.paletteOpen = false;
+      state.pendingSourceId = "";
+      nodePalette.classList.remove("open");
+    }
+
+    function addNode(kind) {
+      const meta = nodeCatalog[kind];
+      if (!meta) return;
+      const source = state.nodes.find((node) => node.id === state.pendingSourceId);
+      const id = `${kind}-${Date.now()}`;
+      const index = state.nodes.length;
+      const node = {
+        id,
+        kind,
+        title: meta.title,
+        type: meta.type,
+        icon: meta.icon,
+        tone: meta.tone,
+        x: source ? Math.min(1030, source.x + 300) : 300 + (index % 3) * 280,
+        y: source ? Math.max(40, source.y + 140) : 100 + Math.floor(index / 3) * 170,
+        description: meta.description,
+        owner: kind === "system" ? "消息中心服务" : kind === "agent" || kind === "search" ? "HR 档案 Agent" : kind === "end" ? "系统" : "Offer SSC 处理组",
+        inputs: kind === "end" ? ["流程结果"] : ["上游数据"],
+        outputs: meta.outputs
+      };
+      state.nodes.push(node);
+      if (source) {
+        state.edges.push({
+          id: `edge-${Date.now()}`,
+          source: source.id,
+          target: id,
+          label: source.kind === "start" ? "需求创建" : "处理完成"
+        });
+      }
+      state.selectedId = id;
+      state.activeTab = "config";
+      closePalette();
+      renderAll();
+      showToast("节点已添加", `${node.title} 已添加到 Flow。`, "success");
+    }
+
+    function showToast(title, message, tone = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast ${tone}`;
+      toast.innerHTML = `${icon(tone === "warning" ? "alert" : "check")}<div class="toast-copy"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(message)}</span></div>`;
+      document.getElementById("toastStack").appendChild(toast);
+      window.setTimeout(() => toast.remove(), 2800);
+    }
+
+    async function runFlow() {
+      if (state.running) return;
+      state.running = true;
+      document.body.classList.add("is-running");
+      document.getElementById("runFlowButton").disabled = true;
+      const sequence = ["start", "review", "filing", "send", "archive", "end"].filter((id) => state.nodes.some((node) => node.id === id));
+      for (const id of sequence) {
+        state.nodes.forEach((node) => node.running = node.id === id);
+        renderNodes();
+        await new Promise((resolve) => window.setTimeout(resolve, 550));
+      }
+      state.nodes.forEach((node) => node.running = false);
+      state.running = false;
+      document.body.classList.remove("is-running");
+      document.getElementById("runFlowButton").disabled = false;
+      renderNodes();
+      showToast("试运行完成", "节点触发与数据传递均执行成功。", "success");
+    }
+
+    function autoLayout() {
+      const positions = {
+        start: [60, 300],
+        review: [320, 230],
+        filing: [650, 80],
+        send: [650, 360],
+        archive: [940, 220],
+        end: [1070, 500]
+      };
+      state.nodes.forEach((node, index) => {
+        const preset = positions[node.id];
+        if (preset) {
+          [node.x, node.y] = preset;
+        } else {
+          node.x = 320 + (index % 3) * 300;
+          node.y = 80 + Math.floor(index / 3) * 180;
+        }
+      });
+      renderAll();
+      showToast("画布已整理", "节点已按流程方向重新排列。", "success");
+    }
+
+    function fitCanvas() {
+      const usableWidth = Math.max(500, canvasViewport.clientWidth - 40);
+      const usableHeight = Math.max(400, canvasViewport.clientHeight - 40);
+      setScale(Math.min(1, usableWidth / 1260, usableHeight / 760));
+      canvasViewport.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+    }
+
+    function saveDraft() {
+      try {
+        localStorage.setItem("ssc-demand-flow-demo", JSON.stringify({ nodes: state.nodes, edges: state.edges }));
+      } catch (error) {
+        // 本地文件在隐私模式下可能禁用 localStorage；原型仍可继续使用。
+      }
+      showToast("草稿已保存", "Flow 配置已保存到当前浏览器。", "success");
+    }
+
+    function validateFlow() {
+      const hasStart = state.nodes.some((node) => node.kind === "start");
+      const hasEnd = state.nodes.some((node) => node.kind === "end");
+      const orphanNodes = state.nodes.filter((node) => node.kind !== "start" && !state.edges.some((edge) => edge.target === node.id));
+      const ownerComplete = state.nodes.filter((node) => !["start", "end"].includes(node.kind)).every((node) => Boolean(node.owner));
+      const checks = [
+        { label: "开始节点已配置", ok: hasStart },
+        { label: "至少包含一个结束节点", ok: hasEnd },
+        { label: "所有工单节点均已配置 Owner", ok: ownerComplete },
+        { label: orphanNodes.length ? `${orphanNodes.length} 个节点没有创建来源` : "所有节点均有创建来源", ok: orphanNodes.length === 0 }
+      ];
+      const passed = checks.every((item) => item.ok);
+      const dialogIcon = document.getElementById("dialogIcon");
+      dialogIcon.className = `dialog-status-icon ${passed ? "" : "warning"}`;
+      dialogIcon.innerHTML = icon(passed ? "check" : "alert");
+      document.getElementById("dialogDescription").textContent = passed
+        ? "校验完成，当前 Flow 没有阻断项，可以发布为生效版本。"
+        : "发现阻断问题，请完成修改后重新校验。";
+      document.getElementById("checkList").innerHTML = checks.map((item) => `
+        <div class="check-item ${item.ok ? "" : "bad"}">${icon(item.ok ? "check" : "alert")}<span>${escapeHtml(item.label)}</span></div>`).join("");
+      const confirm = document.getElementById("dialogConfirm");
+      confirm.disabled = !passed;
+      confirm.style.opacity = passed ? "1" : "0.45";
+      document.getElementById("dialogLayer").classList.add("open");
+    }
+
+    function togglePreview() {
+      state.preview = !state.preview;
+      document.body.classList.toggle("preview-mode", state.preview);
+      const button = document.getElementById("previewButton");
+      button.querySelector("span:last-child").textContent = state.preview ? "退出预览" : "预览";
+      if (state.preview) closePalette();
+      showToast(state.preview ? "已进入预览" : "已退出预览", state.preview ? "配置面板和编辑操作已隐藏。" : "可以继续编辑 Flow。");
+    }
+
+    document.getElementById("brandIcon").innerHTML = icon("logo");
+    hydrateIcons();
+
+    document.getElementById("addNodeButton").addEventListener("click", () => {
+      state.paletteOpen ? closePalette() : openPalette();
+    });
+    document.querySelectorAll("[data-add-kind]").forEach((button) => button.addEventListener("click", () => addNode(button.dataset.addKind)));
+    document.getElementById("runFlowButton").addEventListener("click", runFlow);
+    document.getElementById("zoomOut").addEventListener("click", () => setScale(state.scale - 0.1));
+    document.getElementById("zoomIn").addEventListener("click", () => setScale(state.scale + 0.1));
+    document.getElementById("fitCanvas").addEventListener("click", fitCanvas);
+    document.getElementById("autoLayout").addEventListener("click", autoLayout);
+    document.getElementById("locateStart").addEventListener("click", () => {
+      canvasViewport.scrollTo({ left: 0, top: 180 * state.scale, behavior: "smooth" });
+      selectNode("start");
+    });
+    document.getElementById("toggleGrid").addEventListener("click", () => {
+      canvasViewport.style.backgroundImage = canvasViewport.style.backgroundImage === "none"
+        ? "radial-gradient(var(--grid-dot) 1px, transparent 1px)"
+        : "none";
+    });
+    document.getElementById("saveButton").addEventListener("click", saveDraft);
+    document.getElementById("publishButton").addEventListener("click", validateFlow);
+    document.getElementById("previewButton").addEventListener("click", togglePreview);
+    document.getElementById("dialogCancel").addEventListener("click", () => document.getElementById("dialogLayer").classList.remove("open"));
+    document.getElementById("dialogConfirm").addEventListener("click", () => {
+      document.getElementById("dialogLayer").classList.remove("open");
+      document.querySelector(".status-tag").className = "status-tag success";
+      document.querySelector(".status-tag").textContent = "已发布";
+      showToast("模板已发布", "Offer 发放需求模板已更新为生效版本。", "success");
+    });
+    document.getElementById("dialogLayer").addEventListener("click", (event) => {
+      if (event.target.id === "dialogLayer") document.getElementById("dialogLayer").classList.remove("open");
+    });
+    document.querySelectorAll("[data-demo-action]").forEach((button) => button.addEventListener("click", () => {
+      const action = button.dataset.demoAction;
+      const messages = {
+        help: ["Flow 使用说明", "选择节点后在右侧配置；点击节点右侧“+”可连续添加。"],
+        undo: ["暂无可撤销操作", "完成一次节点修改后会进入操作历史。"],
+        redo: ["暂无可重做操作", "撤销后可在这里恢复。"],
+        addOutput: ["输出参数", "Demo 中展示组件状态，正式接入时打开参数编辑弹窗。"]
+      };
+      if (messages[action]) showToast(messages[action][0], messages[action][1]);
+    }));
+    document.querySelectorAll("[data-nav]").forEach((button) => button.addEventListener("click", () => {
+      if (!button.classList.contains("active")) showToast("导航演示", "当前 HTML 聚焦需求模板 Flow 编辑功能。");
+    }));
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".node-dock") && !event.target.closest(".node-port.out")) closePalette();
+    });
+    window.addEventListener("resize", () => {
+      if (window.innerWidth < 900 && !state.selectedId) propertyPanel.classList.add("no-selection");
+    });
+
+    renderAll();
+    window.setTimeout(() => {
+      canvasViewport.scrollLeft = 10;
+      canvasViewport.scrollTop = 30;
+    }, 0);
+  </script>
+</body>
+</html>

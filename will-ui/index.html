@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Will UI · 组件库</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./dist/will-ui.css">
+    <style>
+      :root {
+        color-scheme: light;
+        --page-bg: #f4f6f5;
+        --page-panel: #fbfcfb;
+        --page-line: #e5eae7;
+        --page-ink: #222724;
+        --page-muted: #7a837e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: var(--page-ink);
+        background: var(--page-bg);
+        font-family: var(--will-font-family);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      .catalog {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        width: 100%;
+        min-width: 0;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        display: flex;
+        height: 100vh;
+        flex-direction: column;
+        padding: 28px 20px 20px;
+        border-right: 1px solid var(--page-line);
+        background: rgb(251 252 251 / 92%);
+        backdrop-filter: blur(16px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 0 8px 26px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 10px;
+        color: #ffffff;
+        background: var(--will-color-primary-500);
+        font-size: 14px;
+        font-weight: 700;
+        box-shadow: 0 8px 18px rgb(12 155 114 / 18%);
+      }
+
+      .brand strong {
+        display: block;
+        font-size: 15px;
+        line-height: 20px;
+      }
+
+      .brand span {
+        display: block;
+        color: var(--page-muted);
+        font-size: 10px;
+        line-height: 16px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .nav-label {
+        margin: 0 8px 8px;
+        color: #a2aaa6;
+        font-size: 10px;
+        line-height: 16px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .nav {
+        display: grid;
+        gap: 4px;
+      }
+
+      .nav a {
+        display: flex;
+        min-height: 38px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        border-radius: 9px;
+        color: #68716c;
+        font-size: 13px;
+        text-decoration: none;
+        transition: 140ms ease;
+      }
+
+      .nav a:hover {
+        color: var(--will-color-primary-500);
+        background: var(--will-color-primary-100);
+      }
+
+      .nav a span {
+        color: #b0b7b3;
+        font-size: 10px;
+      }
+
+      .sidebar-foot {
+        margin-top: auto;
+        padding: 14px 10px 0;
+        border-top: 1px solid var(--page-line);
+        color: var(--page-muted);
+        font-size: 11px;
+        line-height: 18px;
+      }
+
+      .content {
+        width: min(1120px, 100%);
+        min-width: 0;
+        padding: 60px clamp(28px, 5vw, 72px) 96px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        gap: 40px;
+        padding-bottom: 42px;
+        border-bottom: 1px solid var(--page-line);
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin: 0 0 16px;
+        color: var(--will-color-primary-500);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        width: 20px;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+        content: "";
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(40px, 7vw, 70px);
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: -0.055em;
+      }
+
+      .hero-copy {
+        max-width: 610px;
+        margin: 18px 0 0;
+        color: var(--page-muted);
+        font-size: 14px;
+        line-height: 1.8;
+      }
+
+      .version {
+        display: grid;
+        grid-template-columns: repeat(2, 86px);
+        gap: 8px;
+      }
+
+      .metric {
+        padding: 14px;
+        border: 1px solid var(--page-line);
+        border-radius: 12px;
+        background: #ffffff;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 22px;
+        font-weight: 400;
+        line-height: 28px;
+      }
+
+      .metric span {
+        display: block;
+        color: var(--page-muted);
+        font-size: 10px;
+        line-height: 16px;
+      }
+
+      .section {
+        min-width: 0;
+        padding-top: 64px;
+        scroll-margin-top: 24px;
+      }
+
+      .section-heading {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        gap: 24px;
+        margin-bottom: 20px;
+      }
+
+      .section-index {
+        margin: 0 0 6px;
+        color: var(--will-color-primary-500);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 34px;
+        letter-spacing: -0.02em;
+      }
+
+      .section-note {
+        margin: 4px 0 0;
+        color: var(--page-muted);
+        font-size: 12px;
+        line-height: 20px;
+      }
+
+      .component-id {
+        color: #a3aaa6;
+        font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+        font-size: 10px;
+      }
+
+      .component-card {
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid var(--page-line);
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 16px 44px rgb(35 53 44 / 4%);
+      }
+
+      .preview {
+        display: flex;
+        min-height: 190px;
+        align-items: center;
+        gap: 12px;
+        padding: 36px;
+        overflow-x: auto;
+        background:
+          linear-gradient(var(--page-line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--page-line) 1px, transparent 1px),
+          var(--page-panel);
+        background-size: 24px 24px;
+        background-position: -1px -1px;
+      }
+
+      .preview--column {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+      }
+
+      .preview--fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        align-items: start;
+        gap: 24px;
+      }
+
+      .preview--steps {
+        min-height: 160px;
+      }
+
+      .preview-box {
+        width: min(420px, 100%);
+        padding: 24px;
+        border: 1px solid var(--page-line);
+        border-radius: 14px;
+        background: rgb(255 255 255 / 96%);
+        box-shadow: 0 16px 36px rgb(37 59 49 / 7%);
+      }
+
+      .preview-box--wide {
+        width: 100%;
+      }
+
+      .component-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 22px;
+        padding: 14px 18px;
+        border-top: 1px solid var(--page-line);
+        color: var(--page-muted);
+        font-size: 10px;
+        line-height: 18px;
+      }
+
+      .component-meta code {
+        color: #58615c;
+        font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+      }
+
+      .token-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        overflow: hidden;
+        border: 1px solid var(--page-line);
+        border-radius: 16px;
+        background: #ffffff;
+      }
+
+      .token {
+        min-width: 0;
+        padding: 20px;
+        border-right: 1px solid var(--page-line);
+        border-bottom: 1px solid var(--page-line);
+      }
+
+      .token:nth-child(4n) {
+        border-right: 0;
+      }
+
+      .token:nth-last-child(-n + 4) {
+        border-bottom: 0;
+      }
+
+      .swatch {
+        display: block;
+        width: 100%;
+        height: 52px;
+        margin-bottom: 16px;
+        border: 1px solid rgb(34 39 36 / 6%);
+        border-radius: 10px;
+        background: var(--swatch);
+      }
+
+      .token strong,
+      .token code {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .token strong {
+        margin-bottom: 4px;
+        font-size: 12px;
+        font-weight: 400;
+      }
+
+      .token code {
+        color: var(--page-muted);
+        font-size: 9px;
+      }
+
+      .tab-panel-demo {
+        min-height: 72px;
+        padding: 20px 4px 0;
+        color: var(--page-muted);
+        font-size: 12px;
+      }
+
+      .event-toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 20;
+        padding: 10px 14px;
+        border: 1px solid var(--page-line);
+        border-radius: 10px;
+        color: #ffffff;
+        background: #29312d;
+        font-size: 11px;
+        box-shadow: 0 12px 30px rgb(25 35 30 / 18%);
+        opacity: 0;
+        transform: translateY(8px);
+        transition: 180ms ease;
+        pointer-events: none;
+      }
+
+      .event-toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 820px) {
+        .catalog {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+          width: 100%;
+          min-width: 0;
+          height: auto;
+          padding: 18px 20px;
+          border-right: 0;
+          border-bottom: 1px solid var(--page-line);
+        }
+
+        .brand {
+          padding-bottom: 14px;
+        }
+
+        .nav {
+          display: flex;
+          overflow-x: auto;
+        }
+
+        .nav-label,
+        .nav a span,
+        .sidebar-foot {
+          display: none;
+        }
+
+        .nav a {
+          flex: 0 0 auto;
+        }
+
+        .content {
+          width: 100%;
+          padding-top: 40px;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .version {
+          grid-template-columns: repeat(2, minmax(86px, 120px));
+        }
+
+        .preview--fields {
+          grid-template-columns: 1fr;
+        }
+
+        .token-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .token:nth-child(4n) {
+          border-right: 1px solid var(--page-line);
+        }
+
+        .token:nth-child(2n) {
+          border-right: 0;
+        }
+
+        .token:nth-last-child(-n + 4) {
+          border-bottom: 1px solid var(--page-line);
+        }
+
+        .token:nth-last-child(-n + 2) {
+          border-bottom: 0;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .content {
+          padding: 34px 16px 72px;
+        }
+
+        .section {
+          padding-top: 50px;
+        }
+
+        .section-heading {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .preview {
+          padding: 24px 18px;
+        }
+
+        .preview:not(.preview--column, .preview--fields, .preview--steps) {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .token {
+          padding: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="catalog">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">W</div>
+          <div>
+            <strong>Will UI</strong>
+            <span>SSC component library</span>
+          </div>
+        </div>
+        <p class="nav-label">Components</p>
+        <nav class="nav" aria-label="组件目录">
+          <a href="#foundations">基础规范 <span>01</span></a>
+          <a href="#button">按钮 <span>02</span></a>
+          <a href="#input">输入框 <span>03</span></a>
+          <a href="#tag">标签 <span>04</span></a>
+          <a href="#tabs">Tab <span>05</span></a>
+          <a href="#steps">步骤 <span>06</span></a>
+        </nav>
+        <p class="sidebar-foot">统一 Token、命名、状态与交互。<br>版本 0.1.0</p>
+      </aside>
+
+      <main class="content">
+        <header class="hero">
+          <div>
+            <p class="eyebrow">SSC design system</p>
+            <h1>Will UI</h1>
+            <p class="hero-copy">
+              将散落的输入框、标签、Tab 与步骤组件收拢为统一组件库，保持原有视觉风格，同时补齐可访问性、响应式和复用接口。
+            </p>
+          </div>
+          <div class="version" aria-label="组件库概览">
+            <div class="metric"><strong>5</strong><span>基础组件</span></div>
+            <div class="metric"><strong>18</strong><span>状态与变体</span></div>
+          </div>
+        </header>
+
+        <section class="section" id="foundations">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">01 / FOUNDATIONS</p>
+              <h2>基础规范</h2>
+              <p class="section-note">统一语义色，业务侧可覆盖 CSS 变量完成主题调整。</p>
+            </div>
+            <code class="component-id">--will-*</code>
+          </div>
+          <div class="token-grid">
+            <div class="token"><i class="swatch" style="--swatch:#0c9b72"></i><strong>Primary</strong><code>#0C9B72</code></div>
+            <div class="token"><i class="swatch" style="--swatch:#e8f8f3"></i><strong>Primary Soft</strong><code>#E8F8F3</code></div>
+            <div class="token"><i class="swatch" style="--swatch:#2f2f2f"></i><strong>Text</strong><code>#2F2F2F</code></div>
+            <div class="token"><i class="swatch" style="--swatch:#9aa39e"></i><strong>Muted</strong><code>#9AA39E</code></div>
+            <div class="token"><i class="swatch" style="--swatch:#dfe7e3"></i><strong>Border</strong><code>#DFE7E3</code></div>
+            <div class="token"><i class="swatch" style="--swatch:#ffffff"></i><strong>Surface</strong><code>#FFFFFF</code></div>
+            <div class="token"><i class="swatch" style="--swatch:#e53e3e"></i><strong>Danger</strong><code>#E53E3E</code></div>
+            <div class="token"><i class="swatch" style="--swatch:#f3f5f4"></i><strong>Disabled</strong><code>#F3F5F4</code></div>
+          </div>
+        </section>
+
+        <section class="section" id="button">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">02 / ACTION</p>
+              <h2>按钮</h2>
+              <p class="section-note">统一通用操作样式，支持主次、危险、幽灵和禁用状态。</p>
+            </div>
+            <code class="component-id">.will-button</code>
+          </div>
+          <div class="component-card">
+            <div class="preview">
+              <button class="will-button will-button--primary">确认提交</button>
+              <button class="will-button will-button--secondary">保存草稿</button>
+              <button class="will-button will-button--danger">删除</button>
+              <button class="will-button will-button--ghost">取消</button>
+              <button class="will-button" disabled>不可用</button>
+            </div>
+            <div class="component-meta">
+              <span>尺寸 <code>40 / 30px</code></span>
+              <span>圆角 <code>10 / 8px</code></span>
+              <span>变体 <code>primary · secondary · danger · ghost</code></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="input">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">03 / FORM</p>
+              <h2>输入框</h2>
+              <p class="section-note">整合单行、小尺寸、搜索、错误、禁用和多行输入。</p>
+            </div>
+            <code class="component-id">.will-field</code>
+          </div>
+          <div class="component-card">
+            <div class="preview preview--fields">
+              <label class="will-field">
+                <span class="will-field__heading">
+                  <span class="will-field__label">服务名称<em class="will-field__required">*</em></span>
+                  <span class="will-field__counter">0 / 30</span>
+                </span>
+                <span class="will-input-shell" data-will-clearable>
+                  <input class="will-input" type="text" placeholder="请输入服务名称">
+                  <button class="will-input__clear" type="button" aria-label="清空输入"></button>
+                </span>
+                <span class="will-field__helper">用于区分不同服务，最多输入 30 个字符</span>
+              </label>
+
+              <label class="will-field">
+                <span class="will-field__label">搜索</span>
+                <span class="will-input-shell will-input-shell--small">
+                  <svg class="will-input__prefix" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.6"></circle>
+                    <path d="m12.5 12.5 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                  </svg>
+                  <input class="will-input" type="search" placeholder="搜索工单名称">
+                </span>
+                <span class="will-field__helper">小号搜索输入</span>
+              </label>
+
+              <label class="will-field">
+                <span class="will-field__label">模板编号</span>
+                <span class="will-input-shell is-error">
+                  <input class="will-input" type="text" value="A" aria-invalid="true">
+                </span>
+                <span class="will-field__helper will-field__helper--error">至少输入 2 个字符</span>
+              </label>
+
+              <label class="will-field">
+                <span class="will-field__label">系统字段</span>
+                <span class="will-input-shell is-disabled">
+                  <input class="will-input" type="text" value="系统自动生成" disabled>
+                </span>
+                <span class="will-field__helper">当前内容不可编辑</span>
+              </label>
+
+              <label class="will-field" style="grid-column:1 / -1">
+                <span class="will-field__label">服务说明</span>
+                <span class="will-textarea-shell">
+                  <textarea class="will-textarea" data-will-autogrow placeholder="请输入服务用途和使用范围"></textarea>
+                </span>
+                <span class="will-field__helper">内容增多时自动增高，也可手动拖拽调整</span>
+              </label>
+            </div>
+            <div class="component-meta">
+              <span>尺寸 <code>medium · small</code></span>
+              <span>类型 <code>text · search · textarea</code></span>
+              <span>状态 <code>default · focus · error · disabled</code></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="tag">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">04 / DATA DISPLAY</p>
+              <h2>标签</h2>
+              <p class="section-note">统一 18px 高度和胶囊外观，通过语义颜色表达状态。</p>
+            </div>
+            <code class="component-id">.will-tag</code>
+          </div>
+          <div class="component-card">
+            <div class="preview">
+              <span class="will-tag will-tag--green">已完成</span>
+              <span class="will-tag will-tag--yellow">待处理</span>
+              <span class="will-tag will-tag--red">已驳回</span>
+              <span class="will-tag will-tag--blue">审批类</span>
+              <span class="will-tag will-tag--gray">未发布</span>
+              <span class="will-tag will-tag--red">99+</span>
+            </div>
+            <div class="component-meta">
+              <span>高度 <code>18px</code></span>
+              <span>最小宽度 <code>18px</code></span>
+              <span>颜色 <code>green · yellow · red · blue · gray</code></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="tabs">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">05 / NAVIGATION</p>
+              <h2>Tab</h2>
+              <p class="section-note">支持数字徽标、内容面板、方向键切换以及动态添加和删除。</p>
+            </div>
+            <code class="component-id">.will-tabs</code>
+          </div>
+          <div class="component-card">
+            <div class="preview preview--column">
+              <div class="preview-box" data-will-tab-group>
+                <div class="will-toolbar" aria-label="Tab 管理">
+                  <button class="will-button will-button--small will-button--primary" type="button" data-will-action="add-tab" data-will-target="#demo-tabs">添加 Tab</button>
+                  <button class="will-button will-button--small will-button--secondary" type="button" data-will-action="remove-tab" data-will-target="#demo-tabs">删除当前</button>
+                </div>
+                <div class="will-tabs" id="demo-tabs" aria-label="请求参数">
+                  <button class="will-tab" aria-selected="true" aria-controls="tab-header" data-value="header">Header <span class="will-tab__count">1</span></button>
+                  <button class="will-tab" aria-selected="false" aria-controls="tab-path" data-value="path">Path <span class="will-tab__count">0</span></button>
+                  <button class="will-tab" aria-selected="false" aria-controls="tab-params" data-value="params">Params <span class="will-tab__count">0</span></button>
+                  <button class="will-tab" aria-selected="false" aria-controls="tab-body" data-value="body">Body <span class="will-tab__count">2</span></button>
+                </div>
+                <div class="will-tab-panel tab-panel-demo" id="tab-header">Header 参数内容</div>
+                <div class="will-tab-panel tab-panel-demo" id="tab-path" hidden>Path 参数内容</div>
+                <div class="will-tab-panel tab-panel-demo" id="tab-params" hidden>Params 参数内容</div>
+                <div class="will-tab-panel tab-panel-demo" id="tab-body" hidden>Body 参数内容</div>
+              </div>
+            </div>
+            <div class="component-meta">
+              <span>键盘 <code>← → Home End</code></span>
+              <span>管理 <code>add · remove</code></span>
+              <span>语义 <code>tablist · tab · tabpanel</code></span>
+              <span>事件 <code>will:change</code></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="steps">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">06 / PROGRESS</p>
+              <h2>步骤</h2>
+              <p class="section-note">显示完成、当前和待处理状态；支持切换、添加及删除步骤。</p>
+            </div>
+            <code class="component-id">.will-steps</code>
+          </div>
+          <div class="component-card">
+            <div class="preview preview--steps">
+              <div class="preview-box preview-box--wide">
+                <div class="will-toolbar" aria-label="步骤管理">
+                  <button class="will-button will-button--small will-button--primary" type="button" data-will-action="add-step" data-will-target="#demo-steps">添加步骤</button>
+                  <button class="will-button will-button--small will-button--secondary" type="button" data-will-action="remove-step" data-will-target="#demo-steps">删除当前</button>
+                </div>
+                <div class="will-steps" id="demo-steps" data-interactive>
+                  <button class="will-step" data-state="complete">
+                    <span class="will-step__content"><span class="will-step__marker"><span class="will-step__number">1</span></span><span class="will-step__label">基本信息</span></span>
+                    <span class="will-step__bar"></span>
+                  </button>
+                  <button class="will-step" data-state="current">
+                    <span class="will-step__content"><span class="will-step__marker"><span class="will-step__number">2</span></span><span class="will-step__label">Owner 配置</span></span>
+                    <span class="will-step__bar"></span>
+                  </button>
+                  <button class="will-step" data-state="pending">
+                    <span class="will-step__content"><span class="will-step__marker"><span class="will-step__number">3</span></span><span class="will-step__label">输入配置</span></span>
+                    <span class="will-step__bar"></span>
+                  </button>
+                  <button class="will-step" data-state="pending">
+                    <span class="will-step__content"><span class="will-step__marker"><span class="will-step__number">4</span></span><span class="will-step__label">完成</span></span>
+                    <span class="will-step__bar"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="component-meta">
+              <span>状态 <code>complete · current · pending</code></span>
+              <span>交互 <code>click · keyboard · add · remove</code></span>
+              <span>事件 <code>will:change</code></span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="event-toast" id="event-toast" role="status" aria-live="polite"></div>
+
+    <script type="module">
+      import { initWillUI } from "./dist/will-ui.js";
+
+      initWillUI();
+
+      const toast = document.querySelector("#event-toast");
+      let toastTimer;
+      document.addEventListener("will:change", (event) => {
+        clearTimeout(toastTimer);
+        toast.textContent =
+          event.detail.component === "tabs"
+            ? `已切换到 ${event.detail.value}`
+            : `当前步骤：${event.detail.label}`;
+        toast.classList.add("is-visible");
+        toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 1200);
+      });
+    </script>
+  </body>
+</html>
