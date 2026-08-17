@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+node_modules/
+
+# Independent repositories maintained separately.
+Sequoia-X/
+daily_stock_analysis/
+icon-site/

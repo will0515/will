@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>弹窗组件 · 基础模板与规则</title>
+  <style>
+    :root {
+      --primary: #0c9b72;
+      --primary-soft: #e8f8f3;
+      --primary-pale: #f3faf8;
+      --page: #f4f6f5;
+      --surface: #ffffff;
+      --surface-warm: #fbfaf8;
+      --title: #222222;
+      --text: #2f2f2f;
+      --secondary: #6f6a62;
+      --muted: #aaaaaa;
+      --border: #e5eae7;
+      --danger: #e53e3e;
+      --radius-modal: 15px;
+      --radius-control: 10px;
+      --shadow: 0 18px 60px rgba(35, 48, 43, 0.09);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(47, 47, 47, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(47, 47, 47, 0.025) 1px, transparent 1px),
+        var(--page);
+      background-size: 24px 24px;
+      font-family: "Source Han Sans SC", "PingFang SC", "Microsoft YaHei",
+        Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 40px));
+      margin: 20px auto 60px;
+      overflow: hidden;
+      border: 1px solid rgba(47, 47, 47, 0.08);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar {
+      position: sticky;
+      z-index: 20;
+      top: 0;
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(251, 250, 248, 0.94);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(12, 155, 114, 0.22);
+    }
+
+    .brand-mark::before {
+      width: 18px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-radius: 4px;
+      content: "";
+      box-shadow: inset 0 -4px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .brand-copy strong {
+      display: block;
+      color: var(--title);
+      font-size: 16px;
+      line-height: 22px;
+    }
+
+    .brand-copy span {
+      display: block;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 18px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav a {
+      padding: 7px 11px;
+      border-radius: 8px;
+      color: var(--secondary);
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    .nav a:hover {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .content {
+      padding: 34px;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 28px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--title);
+      font-size: clamp(25px, 3vw, 34px);
+      line-height: 1.25;
+      letter-spacing: -0.04em;
+    }
+
+    .intro-copy {
+      max-width: 680px;
+      margin: 10px 0 0;
+      color: var(--secondary);
+      font-size: 14px;
+      line-height: 24px;
+    }
+
+    .version {
+      padding: 7px 10px;
+      border: 1px solid #dcebe6;
+      border-radius: 9px;
+      background: var(--primary-pale);
+      color: var(--primary);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .section {
+      scroll-margin-top: 96px;
+      margin-top: 28px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 14px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      color: var(--title);
+      font-size: 18px;
+      line-height: 26px;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .template-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+    }
+
+    .stage {
+      display: grid;
+      min-width: 0;
+      min-height: 520px;
+      place-items: center;
+      padding: 48px 32px;
+      background:
+        radial-gradient(circle at 50% 46%, rgba(12, 155, 114, 0.08), transparent 42%),
+        #eef2f0;
+    }
+
+    .modal-blueprint {
+      width: min(620px, 100%);
+      overflow: hidden;
+      border-radius: var(--radius-modal);
+      background: #ffffff;
+      box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .blueprint-header {
+      display: flex;
+      height: 50px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .blueprint-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 20px;
+    }
+
+    .close-icon {
+      display: grid;
+      width: 20px;
+      height: 20px;
+      place-items: center;
+      color: var(--title);
+    }
+
+    .close-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .blueprint-body {
+      padding: 15px;
+    }
+
+    .demo-field + .demo-field {
+      margin-top: 15px;
+    }
+
+    .demo-label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 20px;
+    }
+
+    .demo-input,
+    .demo-textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .demo-input {
+      height: 40px;
+    }
+
+    .demo-textarea {
+      height: 100px;
+    }
+
+    .blueprint-footer {
+      display: flex;
+      height: 60px;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 0 15px;
+      border-top: 1px solid var(--border);
+    }
+
+    .button {
+      display: inline-flex;
+      width: 50px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .button.secondary {
+      border: 1px solid #cccccc;
+      background: #ffffff;
+      color: var(--title);
+    }
+
+    .button.primary {
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .spec-list {
+      display: grid;
+      align-content: start;
+      border-left: 1px solid var(--border);
+      background: var(--surface-warm);
+    }
+
+    .spec-item {
+      display: grid;
+      grid-template-columns: 98px 1fr;
+      gap: 12px;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .spec-item:last-child {
+      border-bottom: 0;
+    }
+
+    .spec-item span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .spec-item strong {
+      color: var(--text);
+      font-size: 12px;
+      line-height: 20px;
+      text-align: right;
+    }
+
+    .variant-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .variant-card {
+      min-width: 0;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .variant-preview {
+      position: relative;
+      height: 130px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #eef2f0;
+    }
+
+    .mini-modal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 82%;
+      overflow: hidden;
+      border-radius: 7px;
+      background: #ffffff;
+      box-shadow: 0 8px 20px rgba(35, 48, 43, 0.1);
+      transform: translate(-50%, -50%);
+    }
+
+    .mini-header {
+      height: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mini-body {
+      padding: 6px;
+    }
+
+    .mini-line {
+      height: 7px;
+      margin-bottom: 5px;
+      border-radius: 3px;
+      background: #edf1ef;
+    }
+
+    .mini-line.short {
+      width: 45%;
+    }
+
+    .mini-control {
+      height: 16px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .mini-footer {
+      height: 22px;
+      border-top: 1px solid var(--border);
+    }
+
+    .mini-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .mini-cards span {
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--primary-pale);
+    }
+
+    .mini-cards span:first-child {
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+
+    .mini-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-bottom: 5px;
+    }
+
+    .mini-summary span {
+      height: 20px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .mini-table {
+      height: 46px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background:
+        linear-gradient(var(--primary-pale) 0 13px, transparent 13px),
+        repeating-linear-gradient(transparent 0 13px, var(--border) 13px 14px);
+    }
+
+    .mini-confirm {
+      width: 62%;
+    }
+
+    .mini-confirm .mini-body {
+      height: 34px;
+    }
+
+    .variant-type {
+      display: inline-flex;
+      height: 20px;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 7px;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .variant-card h3 {
+      margin: 0 0 5px;
+      color: var(--title);
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .variant-card p {
+      min-height: 40px;
+      margin: 0 0 10px;
+      color: var(--secondary);
+      font-size: 11px;
+      line-height: 20px;
+    }
+
+    .variant-size {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .variant-size strong {
+      color: var(--text);
+      font-size: 11px;
+    }
+
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border-top: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+    }
+
+    .rule {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      min-height: 92px;
+      padding: 15px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .rule-number {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .rule h3 {
+      margin: 0 0 4px;
+      color: var(--title);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .rule p {
+      margin: 0;
+      color: var(--secondary);
+      font-size: 11px;
+      line-height: 19px;
+    }
+
+    .api-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    }
+
+    .api-copy {
+      padding: 22px;
+      border-right: 1px solid var(--border);
+    }
+
+    .api-copy h3 {
+      margin: 0 0 8px;
+      color: var(--title);
+      font-size: 15px;
+    }
+
+    .api-copy p {
+      margin: 0;
+      color: var(--secondary);
+      font-size: 12px;
+      line-height: 21px;
+    }
+
+    .code {
+      margin: 0;
+      overflow-x: auto;
+      padding: 22px;
+      background: #29312e;
+      color: #dce7e2;
+      font: 12px/1.8 "SFMono-Regular", Consolas, monospace;
+      white-space: pre;
+    }
+
+    .code .accent {
+      color: #67d4ae;
+    }
+
+    .footer-note {
+      margin: 26px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    @media (max-width: 940px) {
+      .template-layout,
+      .api-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .spec-list,
+      .api-copy {
+        border-top: 1px solid var(--border);
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .variant-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .page {
+        width: 100%;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .topbar {
+        position: static;
+        padding: 14px 16px;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .content {
+        padding: 24px 16px 40px;
+      }
+
+      .intro {
+        grid-template-columns: 1fr;
+      }
+
+      .version {
+        justify-self: start;
+      }
+
+      .stage {
+        min-height: 440px;
+        padding: 28px 14px;
+      }
+
+      .variant-grid,
+      .rules-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div class="brand-copy">
+          <strong>弹窗组件</strong>
+          <span>基础模板、变体与使用规则</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#template">基础模板</a>
+        <a href="#variants">组件变体</a>
+        <a href="#rules">使用规则</a>
+        <a href="#api">组件接口</a>
+      </nav>
+    </header>
+
+    <main class="content">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">MODAL COMPONENT</p>
+          <h1>两类弹窗，按需组合基础组件</h1>
+          <p class="intro-copy">
+            弹窗分为提示类和交互类。提示类只反馈信息并提供基础确认操作；交互类通过输入、选择、摘要、表格等基础组件灵活拼搭。
+          </p>
+        </div>
+        <span class="version">规范版本 1.2</span>
+      </section>
+
+      <section class="section" id="template">
+        <div class="section-heading">
+          <h2>基础模板</h2>
+          <p>标准弹窗宽度 620px，主要空间节奏为 15px</p>
+        </div>
+        <div class="panel template-layout">
+          <div class="stage">
+            <div class="modal-blueprint">
+              <div class="blueprint-header">
+                <span class="blueprint-title">新建需求模版</span>
+                <span class="close-icon" aria-label="关闭">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 7 12 12m0 0 5 5m-5-5-5 5m5-5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="blueprint-body">
+                <div class="demo-field">
+                  <span class="demo-label">需求名称*</span>
+                  <div class="demo-input"></div>
+                </div>
+                <div class="demo-field">
+                  <span class="demo-label">描述*</span>
+                  <div class="demo-textarea"></div>
+                </div>
+              </div>
+              <div class="blueprint-footer">
+                <button class="button secondary" type="button">取消</button>
+                <button class="button primary" type="button">创建</button>
+              </div>
+            </div>
+          </div>
+          <aside class="spec-list" aria-label="基础规格">
+            <div class="spec-item"><span>组件结构</span><strong>Header / Body / Footer</strong></div>
+            <div class="spec-item"><span>标准宽度</span><strong>620px</strong></div>
+            <div class="spec-item"><span>小型宽度</span><strong>330px</strong></div>
+            <div class="spec-item"><span>标题栏</span><strong>50px</strong></div>
+            <div class="spec-item"><span>内容内边距</span><strong>15px</strong></div>
+            <div class="spec-item"><span>底部操作区</span><strong>60px</strong></div>
+            <div class="spec-item"><span>弹窗圆角</span><strong>15px</strong></div>
+            <div class="spec-item"><span>操作按钮</span><strong>50 × 30px</strong></div>
+            <div class="spec-item"><span>最大高度</span><strong>视口高度 80%</strong></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="variants">
+        <div class="section-heading">
+          <h2>两类弹窗与结构变体</h2>
+          <p>先确定类别，再使用基础组件拼搭内容结构</p>
+        </div>
+        <div class="variant-grid">
+          <article class="variant-card">
+            <div class="variant-preview">
+              <div class="mini-modal">
+                <div class="mini-header"></div>
+                <div class="mini-body">
+                  <div class="mini-line short"></div>
+                  <div class="mini-control"></div>
+                  <div class="mini-line short" style="margin-top:6px"></div>
+                  <div class="mini-control" style="height:28px"></div>
+                </div>
+                <div class="mini-footer"></div>
+              </div>
+            </div>
+            <span class="variant-type">INTERACTIVE · FORM</span>
+            <h3>表单弹窗</h3>
+            <p>用于轻量的新建和编辑操作，支持必填、校验和提交状态。</p>
+            <div class="variant-size"><span>参考尺寸</span><strong>620 × 355px</strong></div>
+          </article>
+
+          <article class="variant-card">
+            <div class="variant-preview">
+              <div class="mini-modal">
+                <div class="mini-header"></div>
+                <div class="mini-body">
+                  <div class="mini-summary"><span></span><span></span></div>
+                  <div class="mini-line short"></div>
+                  <div class="mini-control"></div>
+                </div>
+                <div class="mini-footer"></div>
+              </div>
+            </div>
+            <span class="variant-type">INTERACTIVE · SUMMARY</span>
+            <h3>摘要表单弹窗</h3>
+            <p>用于复制和派生操作，先展示只读来源信息，再填写新的配置内容。</p>
+            <div class="variant-size"><span>参考尺寸</span><strong>620 × 305px</strong></div>
+          </article>
+
+          <article class="variant-card">
+            <div class="variant-preview">
+              <div class="mini-modal">
+                <div class="mini-header"></div>
+                <div class="mini-body"><div class="mini-cards"><span></span><span></span><span></span></div></div>
+                <div class="mini-footer"></div>
+              </div>
+            </div>
+            <span class="variant-type">INTERACTIVE · CARD</span>
+            <h3>卡片选择弹窗</h3>
+            <p>用于类型和方案选择，默认单选，选中状态使用品牌色边框。</p>
+            <div class="variant-size"><span>参考尺寸</span><strong>620 × 325px</strong></div>
+          </article>
+
+          <article class="variant-card">
+            <div class="variant-preview">
+              <div class="mini-modal">
+                <div class="mini-header"></div>
+                <div class="mini-body">
+                  <div class="mini-summary"><span></span><span></span></div>
+                  <div class="mini-table"></div>
+                </div>
+                <div class="mini-footer"></div>
+              </div>
+            </div>
+            <span class="variant-type">INTERACTIVE · TABLE</span>
+            <h3>表格选择弹窗</h3>
+            <p>用于人员或对象选择，由摘要、筛选、表格和分页组成。</p>
+            <div class="variant-size"><span>参考尺寸</span><strong>620 × 590px</strong></div>
+          </article>
+
+          <article class="variant-card">
+            <div class="variant-preview">
+              <div class="mini-modal mini-confirm">
+                <div class="mini-header"></div>
+                <div class="mini-body"><div class="mini-line"></div></div>
+                <div class="mini-footer"></div>
+              </div>
+            </div>
+            <span class="variant-type">FEEDBACK · CONFIRM</span>
+            <h3>确认弹窗</h3>
+            <p>用于退出、保存和删除确认，只承载一条明确的决策信息。</p>
+            <div class="variant-size"><span>参考尺寸</span><strong>330 × 145px</strong></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="rules">
+        <div class="section-heading">
+          <h2>使用规则</h2>
+          <p>统一结构、状态和关闭行为</p>
+        </div>
+        <div class="rules-grid">
+          <article class="rule">
+            <span class="rule-number">01</span>
+            <div><h3>空间规则</h3><p>外层和主要区块间距使用 15px；紧密关联元素使用 10px；图标与文字使用 5px。</p></div>
+          </article>
+          <article class="rule">
+            <span class="rule-number">02</span>
+            <div><h3>高度规则</h3><p>弹窗高度优先由内容决定；超过视口 80% 时，只允许 Body 滚动。</p></div>
+          </article>
+          <article class="rule">
+            <span class="rule-number">03</span>
+            <div><h3>操作规则</h3><p>主按钮固定在最右侧；主、次按钮颜色可独立配置；提交中进入加载状态，并阻止重复操作。</p></div>
+          </article>
+          <article class="rule">
+            <span class="rule-number">04</span>
+            <div><h3>关闭规则</h3><p>关闭按钮、取消按钮和 Esc 均可关闭；存在未保存内容时必须二次确认。</p></div>
+          </article>
+          <article class="rule">
+            <span class="rule-number">05</span>
+            <div><h3>状态规则</h3><p>至少覆盖默认、悬停、聚焦、错误、禁用、加载、选中和空状态。</p></div>
+          </article>
+          <article class="rule">
+            <span class="rule-number">06</span>
+            <div><h3>危险操作</h3><p>删除和不可逆操作使用红色主按钮，并明确说明影响对象和结果。</p></div>
+          </article>
+          <article class="rule">
+            <span class="rule-number">07</span>
+            <div><h3>类别边界</h3><p>提示类不承载业务输入；提示信息作为独立组件逐条添加，可单独编辑、排序和删除。</p></div>
+          </article>
+          <article class="rule">
+            <span class="rule-number">08</span>
+            <div><h3>拼搭规则</h3><p>交互类固定 Header 和 Footer；支持添加纯文本说明；输入框、下拉选择、信息摘要和日期选择按一行两个排列，其余组件默认占整行；数据列表支持新增、重命名、删除列，并编辑列表项。</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="api">
+        <div class="section-heading">
+          <h2>组件接口</h2>
+          <p>建议沉淀为一个基础组件、两类弹窗和五个结构变体</p>
+        </div>
+        <div class="panel api-panel">
+          <div class="api-copy">
+            <h3>ModalBase</h3>
+            <p>
+              基础组件只负责遮罩、容器、标题栏、内容滚动、操作区和关闭行为。业务内容通过 Body 插槽传入，避免重复实现弹窗骨架。
+            </p>
+          </div>
+          <pre class="code"><span class="accent">&lt;ModalBase</span>
+  title="弹窗标题"
+  category="feedback | interactive"
+  variant="form | summary-form | card-selection |
+           table-selection | confirm"
+  width="620"
+  maxHeight="80vh"
+  closable
+  maskClosable
+  loading
+  onClose
+  onSubmit
+<span class="accent">&gt;</span>
+  Body Content
+<span class="accent">&lt;/ModalBase&gt;</span></pre>
+        </div>
+      </section>
+
+      <p class="footer-note">弹窗组件基础规范 · 默认使用绿色强调的浅色 B 端界面体系</p>
+    </main>
+  </div>
+</body>
+</html>

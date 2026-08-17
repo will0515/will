@@ -110,8 +110,43 @@ This reference is the working component system extracted from the Smart Service 
 5. `SdkInterfaceTable`
 6. `SelectionSummaryCard`
 7. `DangerConfirmDialog`
+8. `IconAssetManager`
+
+### IconAssetManager
+
+用于统一浏览、上传、调色与导出图标资产。
+
+1. 状态：默认、搜索、分类筛选、选中、分类调整、点击上传、拖拽悬停、上传成功、删除确认、空结果
+2. 导出格式：SVG、PNG、WebP、JPG
+3. 使用 token：`color-primary-500`、`color-primary-100`、`color-border-default`、`color-bg-surface`
+4. 适用页面：设计资产库、组件库、品牌资源中心
+5. 删除行为：所有图标均可删除；内置图标的删除结果保存在当前浏览器
+6. 上传行为：支持点击选择或全页面拖拽上传，可一次拖入多个图标文件
+7. 分类行为：支持选择已有分类或输入新分类；内置图标的分类调整保存在当前浏览器
 
 ## Default Variants
+
+### TextInput
+
+1. `medium` — 200×40px, 10px radius, 12px text
+2. `small` — 190×30px, 8px radius, 12px text
+3. `search-medium` — 185×40px, 20px search icon, 5px gap
+4. `search-small` — 181×30px, 20px search icon, 5px gap
+5. `multiline-medium` — 200×40px minimum, auto-growing content
+6. `multiline-small` — 200×30px minimum, auto-growing content
+
+### TextInput States
+
+1. `default`
+2. `hover`
+3. `focus`
+4. `filled`
+5. `error`
+6. `disabled`
+
+TextInput uses `color-border-default` for the default border, `color-primary-500`
+for focus, `color-error` for validation errors, and
+`color-text-placeholder` for placeholder and resize-handle details.
 
 ### Button
 
