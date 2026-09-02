@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Table 组件·Sketch 还原</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --brand: #0c9b72;
+      --text: #2f2f2f;
+      --muted: #aaa;
+      --placeholder: #ccc;
+      --line: #e5eae7;
+      --row-line: #eee;
+      --head: #f3faf8;
+      --hover: #fbfdfc;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      min-width: 320px;
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      overflow: hidden;
+      color: var(--text);
+      background: #fff;
+      font-family: "Source Han Sans SC", "Noto Sans CJK SC", "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    button,
+    input,
+    select { font: inherit; }
+
+    button { cursor: pointer; }
+
+    .stage-shell {
+      position: relative;
+      width: 1407px;
+      height: 881px;
+      flex: none;
+    }
+
+    .artboard {
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 1407px;
+      height: 881px;
+      transform-origin: left top;
+      background: #fff;
+    }
+
+    .table-component {
+      position: absolute;
+      left: 173px;
+      top: 118px;
+      width: 1010px;
+      height: 610px;
+      font-size: 12px;
+    }
+
+    .toolbar {
+      display: flex;
+      width: 100%;
+      height: 30px;
+      align-items: center;
+    }
+
+    .toolbar h1 {
+      width: 84px;
+      margin: 0;
+      color: #2f2f2f;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+
+    .controls {
+      display: flex;
+      width: 491px;
+      height: 30px;
+      margin-left: auto;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control,
+    .button {
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      outline: 0;
+      background: #fff;
+    }
+
+    .search {
+      position: relative;
+      width: 175px;
+      flex: 0 0 175px;
+    }
+
+    .search svg {
+      position: absolute;
+      left: 5px;
+      top: 5px;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+    }
+
+    .search input {
+      width: 100%;
+      height: 100%;
+      padding: 0 8px 0 25px;
+      border: 0;
+      outline: 0;
+      color: #222;
+      background: transparent;
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .search input::placeholder { color: var(--placeholder); opacity: 1; }
+
+    .select-wrap {
+      position: relative;
+      width: 120px;
+      flex: 0 0 120px;
+    }
+
+    .select-wrap select {
+      width: 100%;
+      height: 100%;
+      appearance: none;
+      padding: 0 31px 0 10px;
+      border: 0;
+      outline: 0;
+      color: #222;
+      background: transparent;
+      font-size: 12px;
+      line-height: 20px;
+      cursor: pointer;
+    }
+
+    .select-wrap svg {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 0 5px;
+      color: #222;
+      font-size: 12px;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+
+    .button svg {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+    }
+
+    .reset {
+      width: 59px;
+      flex: 0 0 59px;
+      color: #ccc;
+      border-color: #ccc;
+    }
+
+    .reset:disabled { cursor: default; }
+
+    .reset:not(:disabled) { color: #555; border-color: #ccc; }
+
+    .create {
+      width: 107px;
+      flex: 0 0 107px;
+      color: var(--brand);
+      border-color: var(--brand);
+    }
+
+    .control:focus-within,
+    .button:focus-visible {
+      box-shadow: 0 0 0 2px rgba(12, 155, 114, .12);
+    }
+
+    .table-wrap {
+      position: absolute;
+      left: 0;
+      top: 40px;
+      width: 1010px;
+      height: 570px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .data-table {
+      width: 100%;
+      flex: 0 0 auto;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .data-table col:nth-child(1) { width: 214px; }
+    .data-table col:nth-child(2) { width: 176px; }
+    .data-table col:nth-child(3) { width: 124px; }
+    .data-table col:nth-child(4) { width: 152px; }
+    .data-table col:nth-child(5) { width: 245px; }
+    .data-table col:nth-child(6) { width: 99px; }
+
+    .data-table thead tr { height: 39px; }
+
+    .data-table th {
+      height: 39px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--line);
+      color: #87a38d;
+      background: var(--head);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 30px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .data-table tbody tr {
+      height: 50px;
+      transition: background-color 140ms ease;
+    }
+
+    .data-table tbody tr:nth-child(even) { background: var(--hover); }
+    .data-table tbody tr:hover { background: #f7fbf9; }
+
+    .data-table td {
+      height: 50px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--row-line);
+      color: #2f2f2f;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 15px;
+      vertical-align: middle;
+    }
+
+    .data-table td:last-child { padding: 0 0 0 17px; }
+
+    .primary-text,
+    .secondary-text { display: block; white-space: nowrap; }
+
+    .primary-text { color: #2f2f2f; }
+    .secondary-text { margin-top: 4px; color: #aaa; }
+
+    .cell-single {
+      display: flex;
+      min-height: 30px;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      height: 18px;
+      min-width: 30px;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 5px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 400;
+      line-height: 14px;
+      white-space: nowrap;
+    }
+
+    .tag.draft { color: #185ad5; background: #e3ecfd; }
+    .tag.enabled { color: #2fb88d; background: #e8f8f3; }
+    .tag.disabled { color: #d44622; background: #ffe2df; }
+    .tag.pending { min-width: 40px; color: #555; background: #eee; }
+
+    .more {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      color: #222;
+      background: transparent;
+    }
+
+    .more i {
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .more:hover { background: #f1f5f3; }
+
+    .empty-space {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      background: #fff;
+    }
+
+    .empty-message {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      color: #aaa;
+      font-size: 12px;
+    }
+
+    .table-wrap.is-empty .empty-message { display: grid; }
+
+    .table-footer {
+      position: relative;
+      width: 100%;
+      height: 39px;
+      flex: 0 0 39px;
+      border-top: 1px solid var(--line);
+      color: #aaa;
+      background: #fff;
+      font-family: "Alibaba PuHuiTi 2.0", "Source Han Sans SC", "PingFang SC", sans-serif;
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .total {
+      position: absolute;
+      left: 14px;
+      top: 9px;
+      height: 20px;
+      white-space: nowrap;
+    }
+
+    .pagination {
+      position: absolute;
+      right: 14px;
+      top: 9px;
+      width: 349px;
+      height: 20px;
+      color: #222;
+    }
+
+    .page-button,
+    .page-arrow {
+      position: absolute;
+      top: 0;
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      color: #222;
+      background: transparent;
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .page-arrow { color: #aaa; }
+    .page-arrow.left { left: 0; }
+    .page-button[data-page="1"] { left: 28px; }
+    .page-button[data-page="2"] { left: 53px; }
+    .page-button[data-page="3"] { left: 78px; }
+    .page-button[data-page="4"] { left: 103px; }
+    .page-button[data-page="5"] { left: 128px; }
+    .page-arrow.right { left: 153px; }
+
+    .page-button.active {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .page-size {
+      position: absolute;
+      left: 178px;
+      top: 0;
+      width: 80px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 5px;
+      color: #222;
+      background: #f4f4f4;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    .jump-label {
+      position: absolute;
+      left: 263px;
+      top: 0;
+      width: 24px;
+      height: 20px;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+
+    .jump-input {
+      position: absolute;
+      left: 292px;
+      top: 0;
+      width: 40px;
+      height: 20px;
+      padding: 0 4px;
+      border: 0;
+      border-radius: 5px;
+      outline: 0;
+      color: #222;
+      background: #f4f4f4;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    .page-unit {
+      position: absolute;
+      left: 337px;
+      top: 0;
+      width: 12px;
+      height: 20px;
+      line-height: 20px;
+    }
+
+    .menu {
+      position: absolute;
+      z-index: 5;
+      right: 37px;
+      width: 92px;
+      display: none;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(31, 49, 42, .12);
+    }
+
+    .menu.open { display: grid; }
+
+    .menu button {
+      height: 28px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 5px;
+      color: #444;
+      background: #fff;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    .menu button:hover { background: #f3faf8; }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      top: 756px;
+      z-index: 10;
+      padding: 8px 14px;
+      border-radius: 7px;
+      color: #fff;
+      background: rgba(34, 34, 34, .88);
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 5px);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-shell" id="stageShell">
+    <main class="artboard" id="artboard">
+      <section class="table-component" aria-labelledby="componentTitle">
+        <header class="toolbar">
+          <h1 id="componentTitle">需求模版列表</h1>
+          <div class="controls">
+            <label class="control search" aria-label="搜索工单名称或工单模板 ID">
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="8.2" cy="8.2" r="5.2" fill="none" stroke="#aaa" stroke-width="1.3"/>
+                <path d="M12.2 12.2 16.2 16.2" fill="none" stroke="#aaa" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              <input id="searchInput" type="search" placeholder="搜索工单名称 /工单模板ID" autocomplete="off">
+            </label>
+
+            <label class="control select-wrap" aria-label="状态筛选">
+              <select id="statusFilter">
+                <option value="all">全部状态</option>
+                <option value="draft">草稿</option>
+              </select>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="m7 8.5 3 3 3-3" fill="none" stroke="#ccc" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </label>
+
+            <button class="button reset" id="resetButton" type="button" disabled>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M5.1 7.4A5.3 5.3 0 1 1 5 12.3" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M5.1 4.8v2.8h2.8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>重置</span>
+            </button>
+
+            <button class="button create" id="createButton" type="button">
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M10 5.8v8.4M5.8 10h8.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              <span>新建需求模版</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="table-wrap" id="tableWrap">
+          <table class="data-table">
+            <colgroup><col><col><col><col><col><col></colgroup>
+            <thead>
+              <tr>
+                <th scope="col">需求配置</th>
+                <th scope="col">工单节点</th>
+                <th scope="col">状态</th>
+                <th scope="col">发布校验</th>
+                <th scope="col">更新时间</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr data-status="draft" data-search="候选人资质审批 审批候选人资质与岗位匹配情况 3个工单 客户研发">
+                <td><span class="primary-text">候选人资质审批</span><span class="secondary-text">审批候选人资质与岗位匹配情况</span></td>
+                <td><span class="cell-single">3个工单</span></td>
+                <td><span class="tag draft">草稿</span></td>
+                <td><span class="tag enabled">启用</span></td>
+                <td><span class="primary-text">客户研发</span><span class="secondary-text">2026-05-13 10:20</span></td>
+                <td><button class="more" type="button" aria-label="更多操作"><i></i><i></i><i></i></button></td>
+              </tr>
+              <tr data-status="draft" data-search="Offer 内容确认 确认 Offer 薪酬与入职信息 3个工单 客户研发">
+                <td><span class="primary-text">Offer 内容确认</span><span class="secondary-text">确认 Offer 薪酬与入职信息</span></td>
+                <td><span class="cell-single">3个工单</span></td>
+                <td><span class="tag draft">草稿</span></td>
+                <td><span class="tag disabled">停用</span></td>
+                <td><span class="primary-text">客户研发</span><span class="secondary-text">2026-05-13 10:20</span></td>
+                <td><button class="more" type="button" aria-label="更多操作"><i></i><i></i><i></i></button></td>
+              </tr>
+              <tr data-status="draft" data-search="入职资料提交 收集候选人补充资料 3个工单 客户研发">
+                <td><span class="primary-text">入职资料提交</span><span class="secondary-text">收集候选人补充资料</span></td>
+                <td><span class="cell-single">3个工单</span></td>
+                <td><span class="tag draft">草稿</span></td>
+                <td><span class="tag pending">待发布</span></td>
+                <td><span class="primary-text">客户研发</span><span class="secondary-text">2026-05-13 10:20</span></td>
+                <td><button class="more" type="button" aria-label="更多操作"><i></i><i></i><i></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-space">
+            <div class="empty-message">暂无匹配的需求模版</div>
+          </div>
+
+          <footer class="table-footer">
+            <span class="total">总计23945条</span>
+            <div class="pagination" aria-label="分页">
+              <button class="page-arrow left" type="button" aria-label="上一页">
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="m11.5 6.5-3.5 3.5 3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="page-button active" type="button" data-page="1">1</button>
+              <button class="page-button" type="button" data-page="2">2</button>
+              <button class="page-button" type="button" data-page="3">3</button>
+              <button class="page-button" type="button" data-page="4">4</button>
+              <button class="page-button" type="button" data-page="5">5</button>
+              <button class="page-arrow right" type="button" aria-label="下一页">
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="m8.5 6.5 3.5 3.5-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="page-size" type="button" aria-label="每页条数">20条/页</button>
+              <span class="jump-label">跳至</span>
+              <input class="jump-input" id="jumpInput" inputmode="numeric" value="5" aria-label="跳转页码">
+              <span class="page-unit">页</span>
+            </div>
+          </footer>
+
+          <div class="menu" id="rowMenu" role="menu">
+            <button type="button" role="menuitem">编辑</button>
+            <button type="button" role="menuitem">复制</button>
+          </div>
+        </div>
+      </section>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <script>
+    const stageShell = document.querySelector('#stageShell');
+    const artboard = document.querySelector('#artboard');
+    const tableWrap = document.querySelector('#tableWrap');
+    const tableBody = document.querySelector('#tableBody');
+    const rows = [...tableBody.querySelectorAll('tr')];
+    const searchInput = document.querySelector('#searchInput');
+    const statusFilter = document.querySelector('#statusFilter');
+    const resetButton = document.querySelector('#resetButton');
+    const createButton = document.querySelector('#createButton');
+    const rowMenu = document.querySelector('#rowMenu');
+    const toast = document.querySelector('#toast');
+    let toastTimer;
+
+    function fitArtboard() {
+      const scale = Math.min(window.innerWidth / 1407, window.innerHeight / 881, 1);
+      stageShell.style.width = `${1407 * scale}px`;
+      stageShell.style.height = `${881 * scale}px`;
+      artboard.style.transform = `scale(${scale})`;
+    }
+
+    function filterRows() {
+      const query = searchInput.value.trim().toLocaleLowerCase('zh-CN');
+      const status = statusFilter.value;
+      let visibleCount = 0;
+
+      rows.forEach((row) => {
+        const matchesText = !query || row.dataset.search.toLocaleLowerCase('zh-CN').includes(query);
+        const matchesStatus = status === 'all' || row.dataset.status === status;
+        const visible = matchesText && matchesStatus;
+        row.hidden = !visible;
+        if (visible) visibleCount += 1;
+      });
+
+      tableWrap.classList.toggle('is-empty', visibleCount === 0);
+      resetButton.disabled = !query && status === 'all';
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add('show');
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
+    }
+
+    searchInput.addEventListener('input', filterRows);
+    statusFilter.addEventListener('change', filterRows);
+
+    resetButton.addEventListener('click', () => {
+      searchInput.value = '';
+      statusFilter.value = 'all';
+      filterRows();
+      searchInput.focus();
+    });
+
+    createButton.addEventListener('click', () => showToast('已进入新建需求模版'));
+
+    document.querySelectorAll('.more').forEach((button, index) => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const row = button.closest('tr');
+        const wrapRect = tableWrap.getBoundingClientRect();
+        const rowRect = row.getBoundingClientRect();
+        const artboardScale = wrapRect.width / 1010;
+        rowMenu.style.top = `${(rowRect.bottom - wrapRect.top) / artboardScale - 5}px`;
+        rowMenu.classList.toggle('open');
+        rowMenu.dataset.row = String(index + 1);
+      });
+    });
+
+    document.addEventListener('click', () => rowMenu.classList.remove('open'));
+    rowMenu.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (event.target.matches('button')) {
+        showToast(`${event.target.textContent}第 ${rowMenu.dataset.row} 条需求模版`);
+        rowMenu.classList.remove('open');
+      }
+    });
+
+    document.querySelectorAll('.page-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelector('.page-button.active')?.classList.remove('active');
+        button.classList.add('active');
+      });
+    });
+
+    document.querySelector('.page-arrow.left').addEventListener('click', () => {
+      const active = Number(document.querySelector('.page-button.active').dataset.page);
+      document.querySelector(`.page-button[data-page="${Math.max(1, active - 1)}"]`).click();
+    });
+
+    document.querySelector('.page-arrow.right').addEventListener('click', () => {
+      const active = Number(document.querySelector('.page-button.active').dataset.page);
+      document.querySelector(`.page-button[data-page="${Math.min(5, active + 1)}"]`).click();
+    });
+
+    document.querySelector('#jumpInput').addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      const page = Math.min(5, Math.max(1, Number(event.currentTarget.value) || 1));
+      event.currentTarget.value = page;
+      document.querySelector(`.page-button[data-page="${page}"]`).click();
+    });
+
+    window.addEventListener('resize', fitArtboard, { passive: true });
+    fitArtboard();
+  </script>
+</body>
+</html>

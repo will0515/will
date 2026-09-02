@@ -143,3 +143,27 @@ Use for delete, leave, close, and forbidden operations.
 3. Success feedback
 4. Warning feedback
 5. Error feedback
+
+## 8. Dashboard Card Interpretation Editor
+
+Use for editing the explanatory text attached to dashboard cards and reports.
+
+### Structure
+
+1. `AppShell`
+2. `PageHeader`
+3. `ContentPanel`
+4. `SplitView`
+5. Left: dashboard card list and status filters
+6. Right: card title and `StatusTag`
+7. `Select` for interpretation type
+8. `RichTextEditor`
+9. Save metadata and primary `Button`
+
+### Required States
+
+1. Existing interpretation loaded
+2. Empty interpretation
+3. Dirty draft
+4. Saved successfully
+5. Readonly or published content

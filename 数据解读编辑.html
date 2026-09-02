@@ -1,0 +1,1549 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据管理工作台 · 数据解读编辑</title>
+  <link rel="stylesheet" href="./will-ui/dist/will-ui.css" />
+  <!--
+    还原说明：
+    - 以 Sketch 中 1280×720 画板为基准，复现预览态与修正态。
+    - Sketch 仅提供桌面端画面，窄屏采用等比例收缩与横向滚动兜底。
+    - 交互覆盖：预览/修正、单元格编辑、数据确认、左侧筛选与切换、分页、顶部下拉、发布反馈。
+    - 页面可直接打开，无网络依赖；组件样式与原稿字体均从当前项目本地加载。
+  -->
+  <style>
+    @font-face {
+      font-family: "Source Han Sans SC";
+      src: url("./assets/fonts/SourceHanSansSC-Regular.otf") format("opentype");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Source Han Sans SC";
+      src: url("./assets/fonts/SourceHanSansSC-Bold.otf") format("opentype");
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Alibaba PuHuiTi 2.0";
+      src: url("./assets/fonts/AlibabaPuHuiTi-2-55-Regular.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
+
+    :root {
+      --brand: #655fff;
+      --brand-soft: #f8f7ff;
+      --brand-pale: #edf2ff;
+      --ink: #222222;
+      --muted: #aaaaaa;
+      --muted-2: #878ba2;
+      --line: #e5e6ea;
+      --canvas: #f6f6f6;
+      --panel: #ffffff;
+      --mint: #00a85a;
+      --mint-bg: #e5f8ef;
+      --blue: #3576ed;
+      --blue-bg: #e8f0ff;
+      --orange: #f08a38;
+      --orange-bg: #fff0e5;
+      --shadow: 0 1px 3px rgba(29, 31, 42, 0.04);
+      --ease: cubic-bezier(.2, .8, .2, 1);
+      --will-color-primary-500: #655fff;
+      --will-color-primary-100: #f8f7ff;
+      --will-color-tag-green-bg: #e5f8ef;
+      --will-color-tag-green: #00a85a;
+      --will-color-tag-yellow-bg: #fff0e5;
+      --will-color-tag-yellow: #f08a38;
+      --will-color-tag-blue-bg: #e8f0ff;
+      --will-color-tag-blue: #3576ed;
+      --will-font-family: "Source Han Sans SC", "PingFang SC", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; width: 100%; height: 100%; }
+
+    body {
+      min-width: 960px;
+      overflow: hidden;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: "Source Han Sans SC", "PingFang SC", sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font: inherit; }
+    [hidden] { display: none !important; }
+
+    button {
+      border: 0;
+      color: inherit;
+      background: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--brand) 42%, transparent);
+      outline-offset: 2px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: 50px minmax(0, 1fr);
+      width: 100vw;
+      height: 100vh;
+      min-width: 960px;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 50px;
+      padding: 0 15px;
+      background: #fff;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    .topbar-left, .topbar-right, .company, .select-button {
+      display: flex;
+      align-items: center;
+    }
+
+    .topbar-left { gap: 8px; }
+
+    .back-button {
+      display: grid;
+      width: 24px;
+      height: 30px;
+      place-items: center;
+      border-radius: 6px;
+      transition: background .16s ease, transform .16s ease;
+    }
+
+    .back-button:hover { background: #f5f5f5; }
+    .back-button:active { transform: translateX(-2px); }
+
+    .chevron-left, .chevron-right, .chevron-down, .chevron-up {
+      width: 8px;
+      height: 8px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      display: inline-block;
+    }
+
+    .chevron-left { transform: rotate(135deg); }
+    .chevron-right { transform: rotate(-45deg); }
+    .chevron-down { transform: rotate(45deg); }
+    .chevron-up { transform: rotate(225deg); }
+
+    .page-title {
+      margin: 0;
+      font-family: "Source Han Sans SC", "PingFang SC", sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 30px;
+    }
+
+    .topbar-right { gap: 10px; }
+
+    .company {
+      position: relative;
+      gap: 8px;
+      height: 34px;
+      padding-left: 2px;
+    }
+
+    .company-avatar {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      color: #fff;
+      background: #8968ff;
+      border-radius: 50%;
+      place-items: center;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .company-name {
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: "Source Han Sans SC", "PingFang SC", sans-serif;
+      font-weight: 700;
+    }
+
+    .switch-mark {
+      display: grid;
+      gap: 2px;
+      width: 12px;
+      color: #555;
+      transform: scale(.75);
+    }
+
+    .switch-mark i {
+      display: block;
+      width: 5px;
+      height: 5px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+    }
+
+    .switch-mark i:first-child { transform: rotate(225deg); }
+    .switch-mark i:last-child { transform: rotate(45deg); }
+
+    .select-wrap { position: relative; }
+
+    .select-button {
+      justify-content: space-between;
+      width: 121px;
+      height: 30px;
+      padding: 0 11px;
+      border: 1px solid #e2e4e6;
+      border-radius: 8px;
+      background: #fff;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .select-button:hover, .select-wrap.open .select-button {
+      border-color: #c9c7ff;
+      box-shadow: 0 0 0 3px rgba(101, 95, 255, .08);
+    }
+
+    .select-button .chevron-down { color: #c6c6c6; }
+
+    .dropdown {
+      position: absolute;
+      top: calc(100% + 7px);
+      right: 0;
+      z-index: 30;
+      width: 150px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+      box-shadow: 0 12px 28px rgba(25, 27, 38, .12);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-5px) scale(.98);
+      transform-origin: top right;
+      transition: opacity .16s ease, transform .16s var(--ease), visibility .16s;
+    }
+
+    .select-wrap.open .dropdown {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    .dropdown button {
+      width: 100%;
+      min-height: 32px;
+      padding: 0 10px;
+      text-align: left;
+      border-radius: 6px;
+    }
+
+    .dropdown button:hover { background: #f6f6f8; }
+    .dropdown button.active { color: var(--brand); background: var(--brand-soft); }
+
+    .publish-button {
+      width: 92px;
+      height: 30px;
+      padding: 0;
+      color: #fff;
+      background: var(--brand);
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: 0 3px 8px rgba(101, 95, 255, .16);
+      transition: background .16s ease, transform .16s ease, box-shadow .16s ease;
+    }
+
+    .publish-button:hover { background: #5751f0; box-shadow: 0 5px 12px rgba(101, 95, 255, .22); }
+    .publish-button:active { transform: translateY(1px); }
+
+    .workspace {
+      min-height: 0;
+      padding: 15px;
+      overflow: hidden;
+    }
+
+    .panel {
+      display: grid;
+      grid-template-rows: 50px minmax(0, 1fr);
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border: 1px solid #dedfe3;
+      border-radius: 10px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(8px);
+      animation: panel-in .44s var(--ease) forwards;
+    }
+
+    @keyframes panel-in { to { opacity: 1; transform: translateY(0); } }
+
+    .tabs {
+      display: flex;
+      align-items: end;
+      height: 50px;
+      margin: 0 15px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab {
+      position: relative;
+      height: 50px;
+      padding: 0 10px;
+      color: #222;
+      font-size: 14px;
+      line-height: 50px;
+      transition: color .18s ease;
+    }
+
+    .tab::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background: var(--brand);
+      transform: scaleX(0);
+      transition: transform .24s var(--ease);
+    }
+
+    .tab.active { color: var(--brand); font-weight: 700; }
+    .tab.active::after { transform: scaleX(1); }
+
+    .panel-content {
+      display: grid;
+      grid-template-columns: var(--board-sidebar-width, 313px) minmax(0, 1fr);
+      min-height: 0;
+      transition: grid-template-columns .18s var(--ease);
+    }
+
+    .sidebar {
+      min-height: 0;
+      padding: 15px 15px 12px;
+      border-right: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .sidebar-heading {
+      display: flex;
+      height: 30px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .sidebar-heading strong { font-weight: 700; }
+    .sidebar-heading span { color: #c6c6c6; font-weight: 400; }
+
+    .filters {
+      display: flex;
+      align-items: center;
+      width: max-content;
+      max-width: none;
+      height: 26px;
+      padding: 2px;
+      overflow: visible;
+      border-radius: 8px;
+      background: #f7f7f7;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.015);
+      font-size: 12px;
+    }
+
+    .filter {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 22px;
+      padding: 0 7px;
+      color: #aaa;
+      white-space: nowrap;
+      border-radius: 7px;
+      transition: color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .filter:hover { color: #555; }
+    .filter.active { color: #222; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+
+    .count {
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      color: #888;
+      background: #eee;
+      border-radius: 9px;
+      text-align: center;
+      line-height: 18px;
+    }
+
+    .filter.active .count { color: #3576ed; background: var(--blue-bg); }
+
+    .item-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .report-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      align-items: center;
+      min-height: 50px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      text-align: left;
+      opacity: 0;
+      transform: translateX(-8px);
+      animation: item-in .36s var(--ease) forwards;
+      animation-delay: calc(var(--i) * 45ms + 100ms);
+      transition: background .18s ease, transform .18s ease;
+    }
+
+    @keyframes item-in { to { opacity: 1; transform: translateX(0); } }
+
+    .report-item:hover { background: #fafafa; }
+    .report-item.attention, .report-item.selected { background: #fbfaff; }
+    .report-item:active { transform: scale(.992); }
+
+    .report-number {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      color: #b5b5b5;
+      background: #ededed;
+      border-radius: 5px;
+      place-items: center;
+      font-size: 15px;
+      font-weight: 700;
+      transition: color .18s ease, background .18s ease;
+    }
+
+    .report-item.attention .report-number, .report-item.selected .report-number {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .star {
+      position: absolute;
+      top: 3px;
+      left: 39px;
+      width: 10px;
+      height: 10px;
+      background: #e7e437;
+      clip-path: polygon(50% 0,61% 34%,98% 36%,68% 57%,79% 94%,50% 72%,21% 94%,32% 57%,2% 36%,39% 34%);
+      filter: drop-shadow(0 1px 0 #fff);
+    }
+
+    .report-copy { min-width: 0; padding-left: 7px; }
+
+    .report-name {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: "Source Han Sans SC", "PingFang SC", sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 17px;
+    }
+
+    .report-meta {
+      display: block;
+      overflow: hidden;
+      color: #aaa;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 10px;
+      line-height: 14px;
+    }
+
+    .status {
+      height: 21px;
+      padding: 0 7px;
+      border-radius: 11px;
+      white-space: nowrap;
+      font-size: 10px;
+      line-height: 21px;
+    }
+
+    .status.review { color: var(--orange); background: var(--orange-bg); }
+    .status.pending { color: var(--blue); background: var(--blue-bg); }
+    .status.published { color: var(--mint); background: var(--mint-bg); }
+
+    .empty-filter {
+      padding: 36px 10px;
+      color: #aaa;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .main {
+      display: grid;
+      grid-template-rows: 60px minmax(0, 1fr) auto;
+      min-width: 0;
+      min-height: 0;
+      padding: 0 15px 14px;
+    }
+
+    .main.editing { padding-bottom: 0; }
+    .main.editing .table-card {
+      margin-bottom: -1px;
+      transform: translateY(-5px);
+    }
+
+    .main-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dataset-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .dataset-title h2 {
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: "Source Han Sans SC", "PingFang SC", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .mode-toggle {
+      display: flex;
+      height: 28px;
+      padding: 2px;
+      border-radius: 8px;
+      background: #f6f6f6;
+    }
+
+    .mode-toggle button {
+      min-width: 42px;
+      height: 24px;
+      padding: 0 9px;
+      color: #aaa;
+      border-radius: 6px;
+      transition: color .2s ease, background .2s ease, box-shadow .2s ease, transform .18s ease;
+    }
+
+    .mode-toggle button.active {
+      color: #fff;
+      background: var(--brand);
+      box-shadow: 0 2px 6px rgba(101, 95, 255, .18);
+    }
+
+    .mode-toggle button:active { transform: scale(.96); }
+
+    .main.interpretation-mode {
+      grid-template-rows: 60px minmax(0, 1fr);
+      padding-bottom: 14px;
+    }
+
+    .interpretation-editor {
+      display: grid;
+      grid-template-rows: 70px minmax(0, 1fr) 44px;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .interpretation-control {
+      position: relative;
+    }
+
+    .interpretation-field {
+      display: flex;
+      width: 100%;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .interpretation-field-label {
+      color: #555;
+      font-size: 12px;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+
+    .editor-select {
+      position: relative;
+      width: calc(100% / 3);
+      font-size: 12px;
+    }
+
+    .editor-select-trigger {
+      display: flex;
+      width: 100%;
+      height: 40px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .editor-select-trigger:hover,
+    .editor-select.open .editor-select-trigger {
+      border-color: #c9c7ff;
+      box-shadow: 0 0 0 3px rgba(101, 95, 255, .08);
+    }
+
+    .editor-select-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 20;
+      width: 100%;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 15px 25px rgba(0, 0, 0, .1);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      transition: opacity .16s ease, transform .16s ease, visibility .16s;
+    }
+
+    .editor-select.open .editor-select-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .editor-select-option {
+      width: 100%;
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 6px;
+      text-align: left;
+    }
+
+    .editor-select-option:hover { background: #f6f6f6; }
+    .editor-select-option.active { color: var(--brand); background: var(--brand-soft); }
+
+    .interpretation-hint {
+      position: absolute;
+      right: 0;
+      bottom: 11px;
+      color: #aaa;
+      font-size: 10px;
+      line-height: 18px;
+      white-space: nowrap;
+    }
+
+    .rich-editor {
+      display: grid;
+      grid-template-rows: 42px minmax(0, 1fr);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid #dfe1e4;
+      border-radius: 10px;
+      background: #fff;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .rich-editor:focus-within {
+      border-color: #aaa6ff;
+      box-shadow: 0 0 0 3px rgba(101, 95, 255, .07);
+    }
+
+    .rich-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfaff;
+    }
+
+    .rich-toolbar-button {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border-radius: 6px;
+      color: #666;
+      font-family: "Source Han Sans SC", sans-serif;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .rich-toolbar-button:hover,
+    .rich-toolbar-button.active {
+      color: var(--brand);
+      background: #efedff;
+    }
+
+    .rich-toolbar-button[data-command="bold"] { font-weight: 700; }
+    .rich-toolbar-button[data-command="italic"] { font-style: italic; }
+    .rich-toolbar-button[data-command="underline"] { text-decoration: underline; }
+
+    .rich-toolbar-separator {
+      width: 1px;
+      height: 18px;
+      margin: 0 4px;
+      background: var(--line);
+    }
+
+    .rich-editor-content {
+      min-height: 0;
+      padding: 18px 20px 24px;
+      overflow: auto;
+      color: #333;
+      font-size: 14px;
+      line-height: 1.8;
+      outline: 0;
+    }
+
+    .rich-editor-content:empty::before {
+      color: #ccc;
+      content: attr(data-placeholder);
+      pointer-events: none;
+    }
+
+    .rich-editor-content p { margin: 0 0 12px; }
+    .rich-editor-content p:last-child { margin-bottom: 0; }
+    .rich-editor-content ul,
+    .rich-editor-content ol { margin: 8px 0 12px; padding-left: 22px; }
+
+    .interpretation-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+    }
+
+    .interpretation-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #aaa;
+      font-size: 10px;
+      line-height: 18px;
+    }
+
+    .interpretation-save {
+      width: 88px;
+      height: 30px;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    .table-card {
+      display: grid;
+      grid-template-rows: 40px minmax(0, 1fr) 40px;
+      min-height: 0;
+      margin-top: 0;
+      overflow: hidden;
+      border: 1px solid #dfe1e4;
+      border-radius: 10px;
+      background: #fff;
+      transition: margin .24s var(--ease);
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 26.55% 26.1% 40.18% 7.17%;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .table-head {
+      color: var(--muted-2);
+      background: #fbfaff;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+    }
+
+    .table-head > :last-child, .data-row > :last-child { text-align: left; }
+
+    .rows {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .data-row {
+      height: 50px;
+      border-bottom: 1px solid #ececec;
+      font-size: 12px;
+      transition: background .16s ease;
+    }
+
+    .data-row:hover { background: #fcfcfd; }
+    .data-row:last-child { border-bottom: 0; }
+
+    .correction-input {
+      width: 80px;
+      height: 30px;
+      padding: 0 10px;
+      color: #333;
+      border: 1px solid #dcdcf2;
+      border-radius: 7px;
+      background: #fff;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+      appearance: textfield;
+    }
+
+    .correction-input::-webkit-inner-spin-button { display: none; }
+
+    .correction-input:hover { border-color: #c8c6ff; }
+    .correction-input:focus {
+      border-color: var(--brand);
+      outline: 0;
+      box-shadow: 0 0 0 3px rgba(101, 95, 255, .09);
+      transform: translateY(-1px);
+    }
+
+    .correction-shell {
+      width: 80px;
+      height: 30px;
+      padding: 0 10px;
+      border-color: #dcdcf2;
+      border-radius: 7px;
+    }
+
+    .correction-shell .correction-input,
+    .correction-shell .correction-input:hover,
+    .correction-shell .correction-input:focus {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .correction-shell:focus-within {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(101, 95, 255, .09);
+    }
+
+    .difference.changed { color: #f08a38; }
+
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      color: #aaa;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      font-family: "Alibaba PuHuiTi 2.0", "Source Han Sans SC", sans-serif;
+    }
+
+    .pager {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #333;
+      font-size: 12px;
+    }
+
+    .page-arrow {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      color: #b7b7b7;
+      place-items: center;
+      border-radius: 5px;
+    }
+
+    .page-arrow:hover:not(:disabled) { color: var(--brand); background: #f6f5ff; }
+    .page-arrow:disabled { cursor: default; opacity: .45; }
+
+    .page-number {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border-radius: 5px;
+      transition: color .16s ease, background .16s ease, transform .16s ease;
+    }
+
+    .page-number:hover { color: var(--brand); background: #f5f4ff; }
+    .page-number.active { color: #fff; background: var(--brand); }
+    .page-number:active { transform: scale(.92); }
+
+    .per-page {
+      height: 22px;
+      padding: 0 14px;
+      border-radius: 6px;
+      background: #f5f5f5;
+      line-height: 22px;
+      white-space: nowrap;
+    }
+
+    .jump { white-space: nowrap; }
+
+    .jump input {
+      width: 40px;
+      height: 22px;
+      margin: 0 6px;
+      padding: 0 6px;
+      border: 0;
+      border-radius: 6px;
+      background: #f5f5f5;
+      text-align: center;
+      outline: 0;
+    }
+
+    .confirm-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 55px;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: confirm-in .3s var(--ease) forwards;
+    }
+
+    @keyframes confirm-in { to { opacity: 1; transform: translateY(0); } }
+
+    .confirm-copy strong {
+      display: block;
+      margin-bottom: 0;
+      font-family: "Source Han Sans SC", "PingFang SC", sans-serif;
+      font-size: 10px;
+      line-height: 15px;
+    }
+
+    .confirm-copy span { color: #aaa; font-size: 10px; line-height: 15px; }
+
+    .confirm-button {
+      width: 68px;
+      min-width: 68px;
+      height: 30px;
+      padding: 0 10px;
+      color: #fff;
+      background: var(--brand);
+      border-radius: 8px;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(101, 95, 255, .14);
+      transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+    }
+
+    .confirm-button:hover { background: #5751f0; box-shadow: 0 6px 14px rgba(101, 95, 255, .2); }
+    .confirm-button:active { transform: translateY(1px); }
+
+    .toast-stack {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 100;
+      display: grid;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 220px;
+      padding: 11px 14px;
+      color: #333;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 12px 30px rgba(26, 28, 38, .14);
+      opacity: 0;
+      transform: translateY(12px) scale(.98);
+      animation: toast-in .24s var(--ease) forwards, toast-out .2s ease 2.5s forwards;
+      backdrop-filter: blur(10px);
+    }
+
+    .toast::before {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 8px;
+      background: var(--brand);
+      border-radius: 50%;
+      vertical-align: 1px;
+    }
+
+    @keyframes toast-in { to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes toast-out { to { opacity: 0; transform: translateY(8px) scale(.98); } }
+
+    @media (max-width: 1080px) {
+      .panel-content { grid-template-columns: var(--board-sidebar-width, 278px) minmax(0, 1fr); }
+      .sidebar { padding-right: 10px; padding-left: 10px; }
+      .filter { gap: 2px; padding-right: 3px; padding-left: 3px; }
+      .count { min-width: 16px; padding-right: 3px; padding-left: 3px; }
+      .data-grid { grid-template-columns: 24% 25% 34% 17%; padding-right: 14px; padding-left: 14px; }
+      .pager { gap: 5px; }
+    }
+
+    @media (max-height: 650px) {
+      .workspace { padding-top: 10px; padding-bottom: 10px; }
+      .panel { grid-template-rows: 46px minmax(0, 1fr); }
+      .tabs, .tab { height: 46px; }
+      .tab { line-height: 46px; }
+      .main { grid-template-rows: 54px minmax(0, 1fr) auto; }
+      .main.interpretation-mode { grid-template-rows: 54px minmax(0, 1fr); }
+      .interpretation-editor { grid-template-rows: 52px minmax(0, 1fr) 40px; gap: 8px; }
+      .rich-toolbar { height: 38px; }
+      .data-row { height: 44px; }
+      .report-item { min-height: 45px; padding-top: 5px; padding-bottom: 5px; }
+      .item-list { gap: 3px; margin-top: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" data-ssc-component="AppShell">
+    <header class="topbar" data-ssc-component="PageHeader">
+      <div class="topbar-left">
+        <button class="back-button" id="backButton" aria-label="返回"><span class="chevron-left"></span></button>
+        <h1 class="page-title">数据管理工作台</h1>
+      </div>
+
+      <div class="topbar-right">
+        <div class="select-wrap" id="companySelect">
+          <button class="company" aria-haspopup="listbox" aria-expanded="false">
+            <span class="company-avatar">上</span>
+            <span class="company-name" id="companyLabel">上海核音科技集团</span>
+            <span class="switch-mark" aria-hidden="true"><i></i><i></i></span>
+          </button>
+          <div class="dropdown" role="listbox">
+            <button class="active" data-company="上海核音科技集团">上海核音科技集团</button>
+            <button data-company="华东创新科技集团">华东创新科技集团</button>
+            <button data-company="核音数字服务中心">核音数字服务中心</button>
+          </div>
+        </div>
+
+        <div class="select-wrap" id="monthSelect">
+          <button class="select-button" aria-haspopup="listbox" aria-expanded="false">
+            <span id="monthLabel">2026年09月</span><span class="chevron-down"></span>
+          </button>
+          <div class="dropdown" role="listbox">
+            <button data-month="2026年08月">2026年08月</button>
+            <button class="active" data-month="2026年09月">2026年09月</button>
+            <button data-month="2026年10月">2026年10月</button>
+          </div>
+        </div>
+
+        <button class="will-button will-button--primary will-button--small publish-button" id="publishButton">整体发布看板</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel" data-ssc-component="ContentPanel" aria-label="看板数据编辑">
+        <nav class="tabs" aria-label="编辑类型">
+          <button class="tab active" data-tab="dashboard">编辑看板数据</button>
+          <button class="tab" data-tab="interpretation">编辑数据解读</button>
+        </nav>
+
+        <div class="panel-content">
+          <aside class="sidebar" data-ssc-component="Sidebar">
+            <div class="sidebar-heading">
+              <strong>看板卡片</strong>
+              <span>共6张</span>
+            </div>
+            <div class="will-tabs filters" id="filters" data-ssc-component="TableToolbar" role="tablist" aria-label="看板状态筛选"></div>
+            <div class="item-list" id="itemList"></div>
+          </aside>
+
+          <section class="main">
+            <header class="main-head">
+              <div class="dataset-title">
+                <h2 id="datasetTitle">在岗人数分布</h2>
+                <span class="will-tag will-tag--yellow status review" id="datasetStatus">待复核</span>
+              </div>
+              <div class="will-tabs mode-toggle" id="modeToggle" data-ssc-component="Tabs" role="tablist" aria-label="预览或修正">
+                <button class="will-tab active" role="tab" aria-selected="true" data-mode="preview">预览</button>
+                <button class="will-tab" role="tab" aria-selected="false" data-mode="edit">修正</button>
+              </div>
+            </header>
+
+            <div class="table-card" id="dataTableCard" data-ssc-component="DataTable">
+              <div class="table-head data-grid">
+                <span>维度</span><span>业务系统值</span><span>修正值</span><span>差异</span>
+              </div>
+              <div class="rows" id="tableRows"></div>
+              <footer class="table-footer">
+                <span>总计23945条</span>
+                <div class="pager">
+                  <button class="page-arrow" id="prevPage" aria-label="上一页"><span class="chevron-left"></span></button>
+                  <div id="pageNumbers" style="display:flex;gap:4px"></div>
+                  <button class="page-arrow" id="nextPage" aria-label="下一页"><span class="chevron-right"></span></button>
+                  <span class="per-page">20条/页</span>
+                  <label class="jump">跳至<input id="jumpInput" inputmode="numeric" value="5" aria-label="跳至页码">页</label>
+                </div>
+              </footer>
+            </div>
+
+            <section class="interpretation-editor" id="interpretationEditor" data-ssc-component="DataInterpretationEditor" aria-label="数据解读编辑器" hidden>
+              <div class="interpretation-control">
+                <div class="interpretation-field">
+                  <span class="interpretation-field-label">是否为客户关注</span>
+                  <div class="editor-select" id="interpretationTypeSelect">
+                    <button class="editor-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                      <span id="interpretationTypeLabel">是</span>
+                      <span class="chevron-down" aria-hidden="true"></span>
+                    </button>
+                    <div class="editor-select-menu" role="listbox">
+                      <button class="editor-select-option active" type="button" role="option" aria-selected="true" data-value="是">是</button>
+                      <button class="editor-select-option" type="button" role="option" aria-selected="false" data-value="否">否</button>
+                    </div>
+                  </div>
+                </div>
+                <span class="interpretation-hint">解读内容将在看板卡片中展示</span>
+              </div>
+
+              <div class="rich-editor" data-ssc-component="RichTextEditor">
+                <div class="rich-toolbar" role="toolbar" aria-label="富文本格式工具">
+                  <button class="rich-toolbar-button" type="button" data-command="bold" aria-label="加粗" title="加粗">B</button>
+                  <button class="rich-toolbar-button" type="button" data-command="italic" aria-label="斜体" title="斜体">I</button>
+                  <button class="rich-toolbar-button" type="button" data-command="underline" aria-label="下划线" title="下划线">U</button>
+                  <span class="rich-toolbar-separator" aria-hidden="true"></span>
+                  <button class="rich-toolbar-button" type="button" data-command="insertUnorderedList" aria-label="项目符号列表" title="项目符号列表">●</button>
+                  <button class="rich-toolbar-button" type="button" data-command="insertOrderedList" aria-label="编号列表" title="编号列表">1.</button>
+                  <span class="rich-toolbar-separator" aria-hidden="true"></span>
+                  <button class="rich-toolbar-button" type="button" data-command="createLink" aria-label="插入链接" title="插入链接">↗</button>
+                  <button class="rich-toolbar-button" type="button" data-command="removeFormat" aria-label="清除格式" title="清除格式">Tx</button>
+                </div>
+                <div class="rich-editor-content" id="richEditorContent" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="请输入数据解读内容" spellcheck="false"><p><strong>在岗人数整体分布均衡</strong></p><p>本期六个城市的在岗人数均为 486 人，合计 2,916 人，各区域之间暂无明显差异。</p><ul><li>上海、北京、广东、深圳、杭州、成都人数保持一致</li><li>建议持续关注后续月份的区域人员变化</li></ul></div>
+              </div>
+
+              <footer class="interpretation-footer">
+                <div class="interpretation-meta">
+                  <span id="interpretationSaveStatus">已自动保存草稿</span>
+                  <span id="interpretationCount">0 / 5000</span>
+                </div>
+                <button class="will-button will-button--primary will-button--small interpretation-save" id="saveInterpretationButton" type="button">保存解读</button>
+              </footer>
+            </section>
+
+            <div class="confirm-bar" id="confirmBar" hidden>
+              <div class="confirm-copy">
+                <strong id="changeMessage">检测到2个单元格变更</strong>
+                <span>确认后进入“待发布”，不会单独推送给客户。</span>
+              </div>
+              <button class="will-button will-button--primary will-button--small confirm-button" id="confirmButton">数据确认</button>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <script>
+    const reports = [
+      { id: '01', name: '月度薪酬成本趋势', meta: '趋势图 · 今天 10:06', status: '待复核', kind: 'review', featured: true },
+      { id: '02', name: '在岗人数分布', meta: '指标卡 · 今天 10:06', status: '待发布', kind: 'pending', featured: true },
+      { id: '03', name: '社保缴纳概览', meta: '交叉表 · 今天 10:06', status: '已发布', kind: 'published' },
+      { id: '04', name: '招聘完成率', meta: '仪表盘 · 08-21 10:06', status: '已发布', kind: 'published' },
+      { id: '05', name: '离职率趋势', meta: '趋势图 · 08-21 10:06', status: '已发布', kind: 'published' },
+      { id: '06', name: '加班时长统计', meta: '柱状图 · 08-21 10:06', status: '已发布', kind: 'published' }
+    ];
+
+    const rowSeed = [
+      { city: '上海', system: 486, correction: 86 },
+      { city: '北京', system: 486, correction: 84 },
+      { city: '广东', system: 486, correction: 103 },
+      { city: '深圳', system: 486, correction: 73 },
+      { city: '杭州', system: 486, correction: 15 },
+      { city: '成都', system: 486, correction: 96 }
+    ];
+
+    const state = {
+      filter: 'all',
+      selectedId: '02',
+      tab: 'dashboard',
+      interpretationType: '是',
+      mode: 'preview',
+      page: 1,
+      corrections: rowSeed.map(row => row.correction),
+      editedCells: new Set(),
+      hasUserSelection: false
+    };
+
+    const filters = [
+      { id: 'all', label: '全部', count: 10 },
+      { id: 'review', label: '待复核', count: 1 },
+      { id: 'pending', label: '待发布', count: 0 },
+      { id: 'published', label: '已发布', count: 6 }
+    ];
+
+    const filtersEl = document.getElementById('filters');
+    const panelContentEl = document.querySelector('.panel-content');
+    const itemListEl = document.getElementById('itemList');
+    const tableRowsEl = document.getElementById('tableRows');
+    const confirmBarEl = document.getElementById('confirmBar');
+    const datasetTitleEl = document.getElementById('datasetTitle');
+    const datasetStatusEl = document.getElementById('datasetStatus');
+    const mainEl = document.querySelector('.main');
+    const modeToggleEl = document.getElementById('modeToggle');
+    const dataTableCardEl = document.getElementById('dataTableCard');
+    const interpretationEditorEl = document.getElementById('interpretationEditor');
+    const richEditorContentEl = document.getElementById('richEditorContent');
+
+    const statusToneClass = kind => ({
+      review: 'will-tag--yellow',
+      pending: 'will-tag--blue',
+      published: 'will-tag--green'
+    })[kind] || 'will-tag--gray';
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.getElementById('toastStack').appendChild(toast);
+      window.setTimeout(() => toast.remove(), 2850);
+    }
+
+    function syncBoardSidebarWidth() {
+      const sidebar = filtersEl.closest('.sidebar');
+      const sidebarStyle = getComputedStyle(sidebar);
+      const horizontalSpace =
+        parseFloat(sidebarStyle.paddingLeft) +
+        parseFloat(sidebarStyle.paddingRight) +
+        parseFloat(sidebarStyle.borderRightWidth);
+      const minimumWidth = matchMedia('(max-width: 1080px)').matches ? 278 : 313;
+      const naturalWidth = Math.ceil(filtersEl.scrollWidth + horizontalSpace);
+      const sidebarWidth = Math.min(380, Math.max(minimumWidth, naturalWidth));
+      panelContentEl.style.setProperty('--board-sidebar-width', `${sidebarWidth}px`);
+    }
+
+    function renderFilters() {
+      filtersEl.innerHTML = filters.map(filter => `
+        <button class="will-tab filter ${state.filter === filter.id ? 'active' : ''}" role="tab" aria-selected="${state.filter === filter.id}" data-filter="${filter.id}">
+          <span>${filter.label}</span><span class="will-tab__count count">${filter.count}</span>
+        </button>
+      `).join('');
+
+      requestAnimationFrame(syncBoardSidebarWidth);
+
+      filtersEl.querySelectorAll('.filter').forEach(button => {
+        button.addEventListener('click', () => {
+          state.filter = button.dataset.filter;
+          renderFilters();
+          renderItems();
+        });
+      });
+    }
+
+    function renderItems() {
+      const visible = state.filter === 'all' ? reports : reports.filter(report => report.kind === state.filter);
+      if (!visible.length) {
+        itemListEl.innerHTML = '<div class="empty-filter">当前筛选下暂无看板</div>';
+        return;
+      }
+
+      itemListEl.innerHTML = visible.map((report, index) => `
+        <button class="report-item ${report.id === '01' ? 'attention' : ''} ${state.hasUserSelection && state.selectedId === report.id ? 'selected' : ''}" data-id="${report.id}" style="--i:${index}">
+          ${report.featured ? '<span class="star" aria-hidden="true"></span>' : ''}
+          <span class="report-number">${report.id}</span>
+          <span class="report-copy">
+            <span class="report-name">${report.name}</span>
+            <span class="report-meta">${report.meta}</span>
+          </span>
+          <span class="will-tag ${statusToneClass(report.kind)} status ${report.kind}">${report.status}</span>
+        </button>
+      `).join('');
+
+      itemListEl.querySelectorAll('.report-item').forEach(button => {
+        button.addEventListener('click', () => {
+          state.selectedId = button.dataset.id;
+          state.hasUserSelection = true;
+          const report = reports.find(item => item.id === state.selectedId);
+          datasetTitleEl.textContent = report.name;
+          datasetStatusEl.textContent = report.status;
+          datasetStatusEl.className = `will-tag ${statusToneClass(report.kind)} status ${report.kind}`;
+          renderItems();
+        });
+      });
+    }
+
+    function renderRows() {
+      tableRowsEl.innerHTML = rowSeed.map((row, index) => {
+        const value = state.corrections[index];
+        const isEdited = state.editedCells.has(index);
+        const correction = state.mode === 'edit'
+          ? `<span class="will-input-shell will-input-shell--small correction-shell"><input class="will-input correction-input" type="number" value="${value}" data-row="${index}" aria-label="${row.city}修正值"></span>`
+          : `<span>${row.system}</span>`;
+        const difference = state.mode === 'edit' && isEdited ? value - row.system : '——';
+        return `
+          <div class="data-row data-grid">
+            <span>${row.city}</span>
+            <span>${state.mode === 'edit' ? row.system.toFixed(2) : row.system}</span>
+            ${correction}
+            <span class="difference ${isEdited ? 'changed' : ''}">${difference}</span>
+          </div>
+        `;
+      }).join('');
+
+      tableRowsEl.querySelectorAll('.correction-input').forEach(input => {
+        input.addEventListener('input', event => {
+          const index = Number(event.currentTarget.dataset.row);
+          const value = event.currentTarget.value === '' ? 0 : Number(event.currentTarget.value);
+          state.corrections[index] = value;
+          state.editedCells.add(index);
+          updateChangeMessage();
+          const differenceEl = event.currentTarget.closest('.data-row').querySelector('.difference');
+          differenceEl.textContent = value - rowSeed[index].system;
+          differenceEl.classList.add('changed');
+        });
+      });
+    }
+
+    function updateChangeMessage() {
+      const count = Math.max(2, state.editedCells.size);
+      document.getElementById('changeMessage').textContent = `检测到${count}个单元格变更`;
+    }
+
+    function updateInterpretationCount() {
+      const count = richEditorContentEl.innerText.replace(/\s/g, '').length;
+      document.getElementById('interpretationCount').textContent = `${count} / 5000`;
+    }
+
+    function setWorkspaceTab(tab, updateHistory = true) {
+      state.tab = tab;
+      const isInterpretation = tab === 'interpretation';
+      document.querySelectorAll('.tab').forEach(button => {
+        button.classList.toggle('active', button.dataset.tab === tab);
+      });
+      mainEl.classList.toggle('interpretation-mode', isInterpretation);
+      mainEl.classList.toggle('editing', !isInterpretation && state.mode === 'edit');
+      dataTableCardEl.hidden = isInterpretation;
+      interpretationEditorEl.hidden = !isInterpretation;
+      modeToggleEl.hidden = isInterpretation;
+      confirmBarEl.hidden = isInterpretation || state.mode !== 'edit';
+      if (isInterpretation) updateInterpretationCount();
+      if (updateHistory) {
+        const nextHash = isInterpretation ? '#interpretation' : state.mode === 'edit' ? '#edit' : '';
+        history.replaceState(null, '', nextHash || location.pathname + location.search);
+      }
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      if (state.tab === 'dashboard') {
+        history.replaceState(null, '', mode === 'edit' ? '#edit' : location.pathname + location.search);
+      }
+      mainEl.classList.toggle('editing', state.tab === 'dashboard' && mode === 'edit');
+      document.querySelectorAll('[data-mode]').forEach(button => {
+        const active = button.dataset.mode === mode;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+      });
+      confirmBarEl.hidden = state.tab !== 'dashboard' || mode !== 'edit';
+      renderRows();
+      updateChangeMessage();
+    }
+
+    function renderPages() {
+      const pagesEl = document.getElementById('pageNumbers');
+      pagesEl.innerHTML = [1, 2, 3, 4, 5].map(page => `
+        <button class="page-number ${state.page === page ? 'active' : ''}" data-page="${page}">${page}</button>
+      `).join('');
+      document.getElementById('prevPage').disabled = state.page === 1;
+      document.getElementById('nextPage').disabled = state.page === 5;
+      pagesEl.querySelectorAll('.page-number').forEach(button => {
+        button.addEventListener('click', () => {
+          state.page = Number(button.dataset.page);
+          renderPages();
+        });
+      });
+    }
+
+    function setupSelect(selectId, dataKey, labelId) {
+      const wrap = document.getElementById(selectId);
+      const trigger = wrap.querySelector(':scope > button');
+      trigger.addEventListener('click', event => {
+        event.stopPropagation();
+        document.querySelectorAll('.select-wrap.open').forEach(other => {
+          if (other !== wrap) other.classList.remove('open');
+        });
+        wrap.classList.toggle('open');
+        trigger.setAttribute('aria-expanded', String(wrap.classList.contains('open')));
+      });
+      wrap.querySelectorAll('.dropdown button').forEach(option => {
+        option.addEventListener('click', () => {
+          wrap.querySelectorAll('.dropdown button').forEach(item => item.classList.remove('active'));
+          option.classList.add('active');
+          document.getElementById(labelId).textContent = option.dataset[dataKey];
+          wrap.classList.remove('open');
+          trigger.setAttribute('aria-expanded', 'false');
+          showToast(`已切换为${option.dataset[dataKey]}`);
+        });
+      });
+    }
+
+    function setupInterpretationEditor() {
+      const select = document.getElementById('interpretationTypeSelect');
+      const trigger = select.querySelector('.editor-select-trigger');
+      const options = select.querySelectorAll('.editor-select-option');
+
+      trigger.addEventListener('click', event => {
+        event.stopPropagation();
+        select.classList.toggle('open');
+        trigger.setAttribute('aria-expanded', String(select.classList.contains('open')));
+      });
+
+      options.forEach(option => {
+        option.addEventListener('click', event => {
+          event.stopPropagation();
+          state.interpretationType = option.dataset.value;
+          document.getElementById('interpretationTypeLabel').textContent = state.interpretationType;
+          options.forEach(item => {
+            const selected = item === option;
+            item.classList.toggle('active', selected);
+            item.setAttribute('aria-selected', String(selected));
+          });
+          select.classList.remove('open');
+          trigger.setAttribute('aria-expanded', 'false');
+          document.getElementById('interpretationSaveStatus').textContent = '草稿有变更';
+        });
+      });
+
+      document.querySelectorAll('.rich-toolbar-button').forEach(button => {
+        button.addEventListener('mousedown', event => event.preventDefault());
+        button.addEventListener('click', () => {
+          const command = button.dataset.command;
+          let value = null;
+          if (command === 'createLink') {
+            value = window.prompt('请输入链接地址', 'https://');
+            if (!value) return;
+          }
+          richEditorContentEl.focus();
+          document.execCommand(command, false, value);
+          document.getElementById('interpretationSaveStatus').textContent = '草稿有变更';
+          updateInterpretationCount();
+        });
+      });
+
+      richEditorContentEl.addEventListener('input', () => {
+        document.getElementById('interpretationSaveStatus').textContent = '草稿有变更';
+        updateInterpretationCount();
+      });
+
+      document.getElementById('saveInterpretationButton').addEventListener('click', () => {
+        const time = new Intl.DateTimeFormat('zh-CN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).format(new Date());
+        document.getElementById('interpretationSaveStatus').textContent = `已保存 · ${time}`;
+        showToast('数据解读已保存');
+      });
+    }
+
+    renderFilters();
+    renderItems();
+    renderRows();
+    renderPages();
+    setupInterpretationEditor();
+    updateInterpretationCount();
+
+    const sidebarWidthObserver = 'ResizeObserver' in window
+      ? new ResizeObserver(syncBoardSidebarWidth)
+      : null;
+    sidebarWidthObserver?.observe(filtersEl);
+    document.fonts?.ready.then(syncBoardSidebarWidth);
+    window.addEventListener('resize', syncBoardSidebarWidth);
+
+    document.querySelectorAll('[data-mode]').forEach(button => {
+      button.addEventListener('click', () => setMode(button.dataset.mode));
+    });
+
+    document.querySelectorAll('.tab').forEach(button => {
+      button.addEventListener('click', () => {
+        setWorkspaceTab(button.dataset.tab);
+        showToast(state.tab === 'dashboard' ? '已切换到看板数据编辑' : '已切换到数据解读编辑');
+      });
+    });
+
+    document.getElementById('confirmButton').addEventListener('click', () => {
+      const selected = reports.find(report => report.id === state.selectedId);
+      selected.status = '待发布';
+      selected.kind = 'pending';
+      datasetStatusEl.textContent = '待发布';
+      datasetStatusEl.className = 'will-tag will-tag--blue status pending';
+      state.editedCells.clear();
+      setMode('preview');
+      renderItems();
+      showToast('数据已确认，进入待发布');
+    });
+
+    document.getElementById('publishButton').addEventListener('click', () => showToast('发布任务已创建'));
+    document.getElementById('backButton').addEventListener('click', () => showToast('已返回数据管理工作台'));
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (state.page > 1) { state.page -= 1; renderPages(); }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      if (state.page < 5) { state.page += 1; renderPages(); }
+    });
+
+    document.getElementById('jumpInput').addEventListener('change', event => {
+      const next = Math.min(5, Math.max(1, Number(event.target.value) || 1));
+      state.page = next;
+      event.target.value = next;
+      renderPages();
+    });
+
+    setupSelect('companySelect', 'company', 'companyLabel');
+    setupSelect('monthSelect', 'month', 'monthLabel');
+
+    if (location.hash === '#interpretation') {
+      setWorkspaceTab('interpretation', false);
+    } else if (location.hash === '#edit') {
+      setMode('edit');
+    } else {
+      setWorkspaceTab('dashboard', false);
+    }
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.select-wrap.open').forEach(wrap => {
+        wrap.classList.remove('open');
+        wrap.querySelector(':scope > button').setAttribute('aria-expanded', 'false');
+      });
+      const interpretationSelect = document.getElementById('interpretationTypeSelect');
+      interpretationSelect.classList.remove('open');
+      interpretationSelect.querySelector('.editor-select-trigger').setAttribute('aria-expanded', 'false');
+    });
+  </script>
+</body>
+</html>

@@ -41,6 +41,7 @@ This reference is the working component system extracted from the Smart Service 
 | Token | Value | Usage |
 | --- | --- | --- |
 | `radius-sm` | `5px` | Inputs, small controls |
+| `radius-md` | `10px` | Medium controls, editors, panels |
 | `radius-pill` | `12px` | Tags |
 | `radius-round` | `15px` | 30x30 circular icon plate |
 | `control-height-md` | `40px` | Default input and select |
@@ -69,12 +70,13 @@ This reference is the working component system extracted from the Smart Service 
 2. `FormField`
 3. `TextInput`
 4. `TextArea`
-5. `Select`
-6. `InputGroup`
-7. `ReadonlyField`
-8. `SearchField`
-9. `HelperText`
-10. `InlineErrorText`
+5. `RichTextEditor`
+6. `Select`
+7. `InputGroup`
+8. `ReadonlyField`
+9. `SearchField`
+10. `HelperText`
+11. `InlineErrorText`
 
 ### Data Display
 
@@ -110,6 +112,7 @@ This reference is the working component system extracted from the Smart Service 
 5. `SdkInterfaceTable`
 6. `SelectionSummaryCard`
 7. `DangerConfirmDialog`
+8. `DataInterpretationEditor`
 8. `IconAssetManager`
 
 ### IconAssetManager
@@ -188,3 +191,21 @@ for focus, `color-error` for validation errors, and
 2. Use base components to form page skeletons.
 3. Use business components when the pattern already matches.
 4. Add a new component only if the pattern is clearly reusable.
+
+## Added Reusable Patterns
+
+### RichTextEditor
+
+- Purpose: edit formatted explanatory content inside detail and interpretation workflows.
+- States: default, focused, dirty, saved, readonly, empty.
+- Controls: bold, italic, underline, unordered list, ordered list, link, clear formatting.
+- Tokens: `color-border-default`, `color-primary-500`, `color-primary-100`, `font-size-md`, `radius-md`.
+- Page types: detail page, data interpretation editor, content configuration page.
+
+### DataInterpretationEditor
+
+- Purpose: combine interpretation type selection, rich text content and save feedback for a dashboard card.
+- States: editing, dirty draft, saved, empty, readonly.
+- Components: `Select`, `RichTextEditor`, `Button`, `Toast`.
+- Tokens: shared form, border, type and primary-action tokens.
+- Page types: dashboard card interpretation and report annotation workflows.
